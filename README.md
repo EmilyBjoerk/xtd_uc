@@ -7,5 +7,11 @@ The xtd µc library provides implementations of parts of the C++ standard with s
 * Error checking and rounding modes on some math functions is ignored.
 * Sizes of containers may be limited to significantly less than you're used to (255 elements on AVR).
 
+# Supported MCUs
+For the moment:
+* ATmega 8/16/48/88/168/328
+
+Feel free to provide patches for other MCUs.
+
 # Usage
 Get the source, add the `xtd_uc/include/` folder to your include path and add the `.cpp` files from `xtd_uc/src` to your build.
