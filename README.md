@@ -6,6 +6,7 @@ The xtd µc library provides implementations of parts of the C++ standard with s
 * Locales are not a thing, you get LOCALE_C, this simplifies formatting code.
 * Error checking and rounding modes on some math functions is ignored.
 * Sizes of containers may be limited to significantly less than you're used to (255 elements on AVR).
+* No dynamic memory allocation.
 
 # Supported MCUs
 For the moment:
