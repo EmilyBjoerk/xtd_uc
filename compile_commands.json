@@ -1,0 +1,24 @@
+[
+    {
+        "arguments": [
+            "c++",
+            "-c",
+            "--std=c++14",
+            "-g",
+            "-Wall",
+            "-Wextra",
+            "-pedantic",
+            "-pipe",
+            "-Iinclude/",
+            "-I/usr/local/include",
+            "-DF_CPU=8000000",
+            "-D__AVR__=1",
+            "-D__AVR_MEGA__",
+            "-o",
+            "test/tuple.o",
+            "test/tuple.cpp"
+        ],
+        "directory": "/home/emily/workspace/xtd_uc",
+        "file": "test/tuple.cpp"
+    }
+]

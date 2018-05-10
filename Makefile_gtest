@@ -1,0 +1,40 @@
+TARGET = native_tests
+
+GOOGLE_TEST_LIB = gtest
+GOOGLE_TEST_INCLUDE = /usr/local/include
+
+
+AVR_FLAGS = -DF_CPU=8000000 -D__AVR__=1 -D__AVR_MEGA__
+LIBS = -l$(GOOGLE_TEST_LIB)
+CXX = clang++
+CFLAGS = -std=c++14 -g -Wall -Wextra -pedantic -pipe -Iinclude/ -I$(GOOGLE_TEST_INCLUDE) $(AVR_FLAGS)
+LDFLAGS = -Wall -lm
+.PHONY: default all clean
+
+default: test
+all: default
+
+SRCS = $(wildcard test/*.cpp)
+OBJS = $(patsubst %.cpp, %.o, $(SRCS))
+HEADERS = $(wildcard include/*.hpp)
+
+%.o: %.cpp $(HEADERS)
+	$(CXX) $(CFLAGS) -c $< -o $@
+
+.PRECIOUS: $(TARGET) $(OBJS)
+
+$(TARGET): $(OBJS)
+	$(CXX) $(LDFLAGS) $(OBJS) $(LIBS) -o $@
+
+test: $(TARGET)
+	./$(TARGET)
+
+clean:
+	-rm -f $(OBJS)
+	-rm -f $(TARGET)
+
+defines:
+	$(CXX) $(CFLAGS) -dM -E - < /dev/null
+
+flags:
+	$(CXX) $(CFLAGS) -Q -v -E - < /dev/null

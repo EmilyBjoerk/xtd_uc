@@ -12,6 +12,8 @@ namespace xtd{
     using native_uint = uint8_t;
 
     using fast_size_t = native_uint;
+
+    using size_t = unsigned int;
 #else
 #error "AVR defined but no supported family defined!"
 #endif //__AVR_MEGA__

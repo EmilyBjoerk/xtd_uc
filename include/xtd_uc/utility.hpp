@@ -3,6 +3,7 @@
 #include "common.hpp"
 
 #include <stdint.h>
+#include "type_traits.hpp"
 
 namespace xtd {
   template <typename T>
@@ -75,6 +76,19 @@ namespace xtd {
 
     return qa * b + qc + integer_scale(ra, b, rc, den);
   }
-}
+
+  // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2009/n2951.html
+  template <class T, class U,
+            class = typename enable_if<
+                (is_lvalue_reference<T>::value ? is_lvalue_reference<U>::value : true) /*&&
+                is_convertible<typename remove_reference<U>::type*,
+                typename remove_reference<T>::type*>::value*/>::type>
+  inline T&& forward(U&& u) {
+    return static_cast<T&&>(u);
+  }
+
+  template <class T>
+  typename add_rvalue_reference<T>::type declval() noexcept;
+}  // namespace xtd
 
 #endif

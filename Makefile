@@ -30,3 +30,6 @@ clean:
 
 defines:
 	$(CXX) $(CFLAGS) -dM -E - < /dev/null
+
+flags:
+	$(CXX) $(CFLAGS) -Q -v -E - < /dev/null
