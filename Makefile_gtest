@@ -5,9 +5,10 @@ GOOGLE_TEST_INCLUDE = /usr/local/include
 
 
 AVR_FLAGS = -DF_CPU=8000000 -D__AVR__=1 -D__AVR_MEGA__
+TEST_FLAGS = -DHAS_STL
 LIBS = -l$(GOOGLE_TEST_LIB)
 CXX = clang++
-CFLAGS = -std=c++14 -g -Wall -Wextra -pedantic -pipe -Iinclude/ -I$(GOOGLE_TEST_INCLUDE) $(AVR_FLAGS)
+CFLAGS = -std=c++14 -g -O0 -Wall -Wextra -pedantic -pipe -Iinclude/ -I$(GOOGLE_TEST_INCLUDE) $(AVR_FLAGS) $(TEST_FLAGS)
 LDFLAGS = -Wall -lm
 .PHONY: default all clean
 
@@ -16,7 +17,7 @@ all: default
 
 SRCS = $(wildcard test/*.cpp)
 OBJS = $(patsubst %.cpp, %.o, $(SRCS))
-HEADERS = $(wildcard include/*.hpp)
+HEADERS = $(wildcard include/xtd_uc/*.hpp)
 
 %.o: %.cpp $(HEADERS)
 	$(CXX) $(CFLAGS) -c $< -o $@
@@ -28,6 +29,8 @@ $(TARGET): $(OBJS)
 
 test: $(TARGET)
 	./$(TARGET)
+
+testclean: clean test
 
 clean:
 	-rm -f $(OBJS)

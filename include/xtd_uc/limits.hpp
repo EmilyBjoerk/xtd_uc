@@ -30,7 +30,7 @@ namespace xtd {
       constexpr static bool is_iec559 = false;
       constexpr static bool is_bounded = true;
       constexpr static bool is_modulo = numeric_limits_impl_int<T>::is_signed ? false : true;
-      constexpr static int digits = 8 * sizeof(T) - numeric_limits_impl_int<T>::is_signed ? 1 : 0;
+      constexpr static int digits = 8 * sizeof(T) - (numeric_limits_impl_int<T>::is_signed ? 1 : 0);
       constexpr static int digits10 =
           static_cast<int>(numeric_limits_impl_int<T>::digits * 0.30102999566);
       constexpr static int max_digits10 = 0;
@@ -53,7 +53,7 @@ namespace xtd {
       static constexpr T signaling_NaN() { return 0; }
       static constexpr T denorm_min() { return 0; }
     };
-  }
+  }  // namespace detail
 
   template <typename T>
   class numeric_limits {
@@ -132,6 +132,6 @@ class numeric_limits<double>;
 template <>
 class numeric_limits<long double>;
   */
-}
+}  // namespace xtd
 
 #endif

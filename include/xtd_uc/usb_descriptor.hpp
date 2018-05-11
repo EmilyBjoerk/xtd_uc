@@ -1,77 +1,70 @@
 #ifndef XTD_UC_USB_DESCRIPTOR_HPP
 #define XTD_UC_USB_DESCRIPTOR_HPP
+// This file contains the necessary data structures to describe your USB device.
+//
+// These datastructures are defined as templates and are used to construct the
+// USB descriptors to send to the host as well as configure the hardware to
+// match your endpoints etc. Because they are templates they will not occupy any
+// RAM.
+//
+// Typically you generate class descriptions (usb_class.hpp), then endpoints,
+// then interfaces containing endpoints, then configurations containing
+// interfaces and then finally a device descriptor containing the configurations
+// and the control endpoint. The USB descriptor tree is instantiated with
+// usb_build_descriptors<...>() from (usb_device.hpp), this builds the device
+// descriptor as a datastructure that can be directly transmitted to the host.
+// The user is required to do this step in order to chose if they want to put
+// the descriptor in RAM or PROGMEM. The instantiated descriptor object is then
+// passed to usb_create_device(_p)<...>() to create the device object which must
+// be in RAM. Please refer to usb_device.hpp for further documentation.
+//
+
 #include "common.hpp"
+#include "cstdint.hpp"
+#include "tuple.hpp"
 
 namespace xtd {
-  enum class usb_descriptor_type : uint8_t {
-    device = 0x01,
-    configuration = 0x02,
-    string = 0x03,
-    interface = 0x04,
-    endpoint = 0x05
-  };
+  enum usb_transfer_dir : uint8_t { out = 0x0, in = 0x1 };
 
-  enum class usb_transfer_dir : uint8_t { out = 0x0, in = 0x1 };
-
-  enum class usb_transfer_type : uint8_t {
+  enum usb_transfer_type : uint8_t {
     control = 0b00,
     isochronous = 0b01,
     bulk = 0b10,
     interrupt = 0b11,
   };
 
-  enum class usb_sync_type : uint8_t {
+  enum usb_sync_type : uint8_t {
     no_sync = 0b00,
     async = 0b01,
     adaptive = 0b10,
     sync = 0b11,
   };
 
-  enum class usb_usage_type : uint8_t {
+  enum usb_usage_type : uint8_t {
     data = 0b00,
     feedback = 0b01,
     explicit_feedback = 0b10,
   };
 
-  // Taken from: http://www.usb.org/developers/defined_class
-  enum class usb_device_class : uint8_t {
-    use_interface_classes = 0x00,  // Only on device level
-    audio = 0x01,
-    comm_cdc = 0x02,
-    hid = 0x03,
-    physical = 0x05,
-    image = 0x06,
-    printer = 0x07,
-    mass_storage = 0x08,
-    hub = 0x09,  // Only on device level
-    data_cdc = 0x0A,
-    smart_card = 0x0B,
-    content_security = 0x0D,
-    video = 0x0E,
-    personal_healthcare = 0x0F,
-    audio_video = 0x10,
-    billboard = 0x11,  // Only on device level
-    usb_type_c_bridge = 0x12,
-    diagnostic_device = 0xDC,
-    wireless_controller = 0xE0,
-    misc = 0xEF,
-    application_specific = 0xFE,
-    vendor_specific = 0xFF
+  enum usb_hw_flags : uint8_t { none = 0, double_buffer = 1 };
+
+  enum usb_config_flags : uint8_t {
+    bus_powered = (1 << 7),
+    self_powered = (1 << 6),
+    remote_wakeup = (1 << 5)
   };
 
   constexpr uint16_t semver_to_bcd(uint8_t major, uint8_t minor, uint8_t patch) {
     return (uint16_t(major) << 8) | ((minor & 0xF) << 4) | (patch & 0xF);
   }
 
-  enum class usb_bcd : uint16_t { USB_1_0 = 0x0100, USB_1_1 = 0x0110, USB_2_0 = 0x0200 };
-
-  template <typename CRTP, usb_descriptor_type type>
-  struct usb_descriptor_base {
-    uint8_t length = sizeof(CRTP);  // Length of the descriptor.
-    usb_descriptor_type descriptor_type = type;
+  enum usb_bcd : uint16_t {
+    USB_1_0 = semver_to_bcd(1, 0, 0),
+    USB_1_1 = semver_to_bcd(1, 1, 0),
+    USB_2_0 = semver_to_bcd(2, 0, 0)
   };
 
-  // Describes an USB endpoint.
+  // These traits describe an USB endpoint.
   //
   // After much debate I have chose to implement this as a template instead of a straight up
   // struct. The motivation given below:
@@ -89,82 +82,48 @@ namespace xtd {
   // Caveat: It is important to not declare any functions inside of this template as they will
   // be instantiated once per endpoint which is suboptimal from a program space usage point
   // of view.
-  template <usb_transfer_type type,   // If control, only max_packet_size and dual_bank needed
-            uint16_t packet_size,     // Only 8, 16, 32 or 64 supported on AVR
-            bool dual_bank,           // true to use two banks for transmissions on AVR
-            uint8_t endpoint_nr = 0,  // 0 for control, must match hw endpoint nr, nr < 8.
-            uint8_t interval = 1,     // Must be '1' for isochronouse, or [1,255] for interrupt
-            usb_transfer_dir dir = usb_transfer_dir::out,  // Out for control endpoints
-            usb_sync_type sync = usb_sync_type::no_sync,   // Only for isochronous
-            usb_usage_type usage = usb_usage_type::data    // Only for isochronouse
+  template <usb_transfer_type type_,  // If control, only max_packet_size and dual_bank needed
+            uint16_t packet_size_,    // Only 8, 16, 32 or 64 supported on AVR
+            uint8_t hw_flags_,        // Bitmap of usb_hw_flags to use.
+            usb_transfer_dir dir_ = usb_transfer_dir::out,  // Out for control endpoints
+            uint8_t interval_ = 1,  // Must be '1' for isochronouse, or [1,255] for interrupt
+            usb_sync_type sync_ = usb_sync_type::no_sync,  // Only for isochronous
+            usb_usage_type usage_ = usb_usage_type::data   // Only for isochronouse
             >
-  struct usb_descriptor_endpoint
-      : usb_descriptor_base<usb_descriptor_endpoint, usb_descriptor_type::endpoint> {
+  struct usb_endpoint{
   public:
-    constexpr static usb_direction direction = dir;
-    constexpr static bool avr_dual_bank = dual_bank;
+    constexpr static usb_transfer_type type = type_;
+    constexpr static usb_transfer_dir direction = dir_;
+    constexpr static uint16_t max_packet = packet_size_;
 
-  public:
-    // Bits 0..3b endpoint nr. Bits 4..6b reserved (zero). Bits 7 direction 0/1=Out/In.
-    uint8_t endpoint_address = (endpoint_nr & 0x3) | (dir == usb_transfer_dir::in ? 0x80 : 0x00);
+    constexpr static usb_sync_type sync = sync_;
+    constexpr static usb_usage_type usage = usage_;
+    constexpr static uint8_t interval = interval_;
 
-    // Bits 0..1b transfer type. Bits 2..3 sync type. Bits 4..5 usage type.
-    uint8_t attributes = type | (sync << 2) | (usage << 4);
-
-    // AVR HW only supports 8,16,32 or 64 packet sizes AFAICT.
-    uin16_t max_packet_size = packet_size;
-
-    // Isochronour endpoints must set this to 1, interrupts may set [1,255] frames, others zero
-    uint8_t polling_interval = interval;
-
-    static_assert(sizeof(decltype(*this)) == 7, "Interface descriptor must be 7 bytes!");
+    // Describe HW requirements
+    constexpr static uint8_t hw_flags = hw_flags_;
   };
 
-  // Describes an USB interface.
-  //
-  //
-  template <uint8_t nr, usb_device_class clazz, uint8_t sub_clazz, typename... if_endpoints>
-  struct usb_descriptor_interface
-      : usb_descriptor_base<usb_descriptor_interface, usb_descriptor_type::interface> {
+  template <typename usb_class_type, const char* descr, typename... if_endpoints>
+  struct usb_interface {
   public:
     using endpoints_tuple = tuple<if_endpoints...>;
+    using usb_class_description = usb_class_type;
 
-  public:
-    uint8_t interface_number = nr;
-    uint8_t alternate_setting = 0;
-    uint8_t num_endpoints = endpoints_tuple::size();
-    uint8_t interface_class = clazz;
-    uint8_t interface_sub_class = sub_clazz;
-    uint8_t interface_protocol;
-    uint8_t description_string_index;
+    constexpr static uint8_t alternate_setting = 0;
+    constexpr static uint8_t num_endpoints = endpoints_tuple::size();
+    constexpr static const char* description_string = descr;
 
-    endpoints_tuple endpoints;
-
-    static_assert(sizeof(decltype(*this)) == 9, "Interface descriptor must be 9 bytes!");
+    constexpr static endpoints_tuple endpoints = endpoints_tuple();
   };
 
-  struct usb_descriptor_device
-      : usb_descriptor_base<usb_descriptor_device, usb_descriptor_type::device> {
-    usb_bcd bcd_usb = usb_bcd::USB_2_0;  // USB Specification number the device complies too.
-    uint8_t device_class = 0x00;         // Interfaces identify their own classes.
-    uint8_t device_sub_class = 0x00;     // -||-
-    uint8_t device_protocol = 0x00;      // -||-
-    uint8_t max_packet_size;             // Max packet size for zero endpoint (8,16,32 or 64)
-    uint16_t id_vendor;
-    uint16_t id_product;
-    uint16_t bcd_device;
-    uint8_t manufacturer_index;
-    uint8_t product_index;
-    uint8_t serial_number_index;
-    uint8_t num_configurations = 1;
+  template <const char* descr, uint8_t flags, int max_current_mA, typename... interfaces>
+  struct usb_config {};
 
-    static_assert(sizeof(decltype(*this)) == 18, "Device descriptor must be 18 bytes!");
-  };
-
-  struct usb_descriptor_configuration
-      : usb_descriptor_base<usb_descriptor_configuration, usb_descriptor_type::configuration> {
-    implement this
-  };
+  template <uint16_t usb_version, typename usb_class_type, uint16_t vendor_id, uint16_t product_id,
+            uint16_t product_ver, const char* mfg_name, const char* product_name,
+            const char* serial, typename control_endpoint, typename... configs>
+  struct usb_device_traits {};
 
 }  // namespace xtd
 

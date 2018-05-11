@@ -5,17 +5,11 @@
 #include "cstdint.hpp"
 #include "utility.hpp"
 
-#ifdef XTD_PACKED_TUPLES
-#define ATTRIBUTE_PACKED __attribute__((__packed__))
-#else
-#define ATTRIBUTE_PACKED
-#endif
-
 namespace xtd {
   namespace detail {
 
     template <typename...>
-    struct ATTRIBUTE_PACKED pack;
+    struct pack;
 
     template <fast_size_t i, typename first, typename... types>
     struct pack_get {
@@ -35,7 +29,7 @@ namespace xtd {
     };
 
     template <typename type>
-    struct ATTRIBUTE_PACKED pack<type> {
+    struct pack<type> {
       constexpr static fast_size_t size() { return 1; }
 
       constexpr pack() = default;
@@ -50,7 +44,7 @@ namespace xtd {
     };
 
     template <typename type, typename... types>
-    struct ATTRIBUTE_PACKED pack<type, types...> {
+    struct pack<type, types...> {
       using next_pack = pack<types...>;
 
       constexpr pack() = default;
