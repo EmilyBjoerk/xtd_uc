@@ -1,11 +1,18 @@
 #ifndef XTD_UC_USB_DEVICE_HPP
 #define XTD_UC_USB_DEVICE_HPP
-
-#ifdef HAS_AVR_USB
-
 #include "common.hpp"
 #include "cstdint.hpp"
 #include "ratio.hpp"
+#include "usb_description.hpp"
+#include "usb_device_impl.hpp"
+
+#define ENABLE_TEST
+
+#ifdef ENABLE_TEST
+#include "xtd_uc/fake_avr.hpp"
+#else
+#include <avr/io.h>
+#endif
 
 namespace xtd {
   // The different ways to power the D+ and D- pads on the MCU.
@@ -90,7 +97,7 @@ namespace xtd {
     // (or perhaps calling) on_suspend() and on_wake_up().
     void enable_default_suspend() {
       enable_irq(usb_irq::suspend, on_suspend);
-      enable_irq(usb_irq::wakeup, on_wake_up);
+      enable_irq(usb_irq::wake_up, on_wake_up);
     }
 
     // Called from IRQ dispatch when bus is idle. The system task can check if is_suspended()
@@ -122,7 +129,7 @@ namespace xtd {
       thaw_clk();
     }
 
-    void is_suspended() const { return USB_CON & _BV(FRZCLK); }
+    bool is_suspended() const { return USB_CON & _BV(FRZCLK); }
 
     // Resets the USB device. In particular:
     // * USB clock is frozen
@@ -209,7 +216,5 @@ namespace xtd {
     void stop_pll() { PLL_CSR = 0; }
   };  // namespace xtd
 }  // namespace xtd
-
-#endif
 
 #endif

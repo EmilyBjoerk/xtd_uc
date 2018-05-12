@@ -5,7 +5,7 @@ GOOGLE_TEST_INCLUDE = /usr/local/include
 
 
 AVR_FLAGS = -DF_CPU=8000000 -D__AVR__=1 -D__AVR_MEGA__
-TEST_FLAGS = -DHAS_STL
+TEST_FLAGS = -DHAS_STL -DENABLE_TEST
 LIBS = -l$(GOOGLE_TEST_LIB)
 CXX = clang++
 CFLAGS = -std=c++14 -g -O0 -Wall -Wextra -pedantic -pipe -Iinclude/ -I$(GOOGLE_TEST_INCLUDE) $(AVR_FLAGS) $(TEST_FLAGS)

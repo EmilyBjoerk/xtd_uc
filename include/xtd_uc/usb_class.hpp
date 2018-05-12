@@ -96,11 +96,11 @@ namespace xtd {
   // ---------------------------------------------------------------------------
   // Class specification triple
   // ---------------------------------------------------------------------------
-  template <usb_class clazz, uint8_t subclazz = 0, uint8_t protocol = 0>
+  template <usb_class clazz_, uint8_t subclazz_ = 0, uint8_t protocol_ = 0>
   struct usb_class_spec {
-    constexpr static usb_class device_class = clazz;
-    constexpr static uint8_t device_subclass = subclazz;
-    constexpr static uint8_t device_protocol = protocol;
+    constexpr static usb_class clazz = clazz_;
+    constexpr static uint8_t subclazz = subclazz_;
+    constexpr static uint8_t protocol = protocol_;
   };
 
   // ---------------------------------------------------------------------------
