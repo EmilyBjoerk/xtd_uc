@@ -12,10 +12,12 @@
 //
 // -----------------------------------------------------------------------------
 
+#ifndef ENABLE_TEST
 #include <avr/interrupt.h>
 
 // To allow friend declaration in steady_clock
 extern "C" void TIMER2_OVF_vect(void) __attribute__((signal));
+#endif
 
 namespace xtd {
   namespace chrono {
@@ -66,10 +68,12 @@ namespace xtd {
 
     private:
       steady_clock();
+#ifndef ENABLE_TEST
       friend void ::TIMER2_OVF_vect(void);
+#endif
       static volatile rep ticks;
     };
-  }
-}
+  }  // namespace chrono
+}  // namespace xtd
 
 #endif

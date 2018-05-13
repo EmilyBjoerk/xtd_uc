@@ -12,6 +12,13 @@ namespace xtd {
     round_toward_neg_infinity = 3
   };
 
+  enum class round_style{
+    nearest,
+    truncate,
+    floor,
+    ceil
+  };
+
   namespace detail {
     template <typename T>
     class numeric_limits_impl_int {

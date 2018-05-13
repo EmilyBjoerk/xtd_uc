@@ -168,12 +168,12 @@ namespace xtd {
         // a * b / c = d * e / f   <=>    a = d * (ce/bf)
         constexpr auto bf = scales::num * S::den;
         constexpr auto ce = scales::den * S::num;
-        v = static_cast<value_type>(xtd::scale(ratio_t<ce, bf>(), q.v));
+        v = static_cast<value_type>(xtd::ratio_scale<ratio_t<ce, bf>>(q.v));
       }
 
 #ifdef HAS_STL
       friend std::ostream& operator<<(std::ostream& os, const quantity& q) {
-        os << xtd::scale(scales(), static_cast<double>(q.v));
+        os << xtd::ratio_scale<scales>(static_cast<double>(q.v));
         if (!is_same<unity, units>::value) {
           os << ' ' << units();
         }

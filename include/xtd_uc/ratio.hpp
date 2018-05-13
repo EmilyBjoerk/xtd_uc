@@ -20,19 +20,7 @@ namespace xtd {
     constexpr static intmax_t den = abs(DEN) / gcd(NUM, DEN);
 
     constexpr static intmax_t value_round = (num + den / 2) / den;
-
-    constexpr intmax_t operator*(intmax_t x) const { return (x * num + (den >> 2)) / den; }
   };
-
-  template <intmax_t num, intmax_t den, typename T>
-  T scale(ratio<num, den>, T value) {
-    if (numeric_limits<T>::is_integer) {
-      // TODO: Use a computation that doesn't overflow
-      return static_cast<T>(ratio<num, den>() * value);
-    } else {
-      return num * value / den;
-    }
-  }
 
   template <intmax_t NUM, intmax_t DEN>
   using ratio_t = ratio<ratio<NUM, DEN>::num, ratio<NUM, DEN>::den>;
@@ -87,6 +75,37 @@ namespace xtd {
   typedef ratio<1000000000000000000ULL, 1> exa;
   // typedef ratio<1000000000000000000000ULL, 1> zetta;
   // typedef ratio<1000000000000000000000000ULL, 1> yotta;
+
+  // computes x*r where r is a ratio<> object.
+  template <typename R, typename T,
+            round_style rounding = round_style::nearest>  // todo; enable only for r is ratio
+  constexpr T
+  ratio_scale(T value) {
+    if (numeric_limits<T>::is_integer) {
+      // todo: use a computation that doesn't overflow
+      if (rounding == round_style::nearest) {
+        auto p = value * R::num;
+        return static_cast<T>((p + sign(p) * (R::den / 2)) / R::den);
+      } else if (rounding == round_style::truncate) {
+        return static_cast<T>(value * R::num / R::den);
+      } else if (rounding == round_style::floor) {
+        return static_cast<T>((value * R::num - ((R::den+1) / 2)) / R::den);
+      } else {  // ceil
+        return static_cast<T>((value * R::num + R::den - 1) / R::den);
+      }
+    } else {
+      return R::num * value / R::den;
+    }
+  }
+
+  // given a value x and two ratios, r_left and r_right, let: y * r_left = x * r_right
+  // this function computes 'y' such tht the above expression holds.
+  template <typename r_left, typename r_right, typename T>
+  constexpr T ratio_convert(T x) {
+    using scale = ratio_divide<r_right, r_left>;
+    return ratio_scale<scale>(x);
+  }
+
 }  // namespace xtd
 
 #endif

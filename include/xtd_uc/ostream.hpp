@@ -2,9 +2,7 @@
 #define XTD_UC_OSTREAM_HPP
 #include "common.hpp"
 
-#include <avr/pgmspace.h>
-#include <stdio.h>
-
+#include "avr.hpp"
 #include "limits.hpp"
 #include "type_traits.hpp"
 
@@ -12,11 +10,6 @@ namespace xtd {
 
   template <typename stream_tag>
   class ostream;
-
-  struct pstr {
-    explicit pstr(const char* s) : str(s){};
-    const char* str;
-  };
 
   template <typename stream_tag>
   auto& operator<<(ostream<stream_tag>& os, const char* data) {

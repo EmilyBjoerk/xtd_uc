@@ -4,6 +4,8 @@
 
 #include <gtest/gtest.h>
 
+#if 0
+
 using namespace xtd;
 #define PROG_MEM
 
@@ -53,3 +55,4 @@ using device_traits = usb_device_traits<usb_bcd::USB_2_0, usb_class_use_interfac
 constexpr auto usb_descriptors PROG_MEM = usb_build_descriptors<device_traits>();
 
 auto usb_device = usb_create_device_p(usb_descriptors);
+#endif
