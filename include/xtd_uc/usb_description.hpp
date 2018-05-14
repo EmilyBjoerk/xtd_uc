@@ -1,6 +1,8 @@
-#ifndef XTD_UC_USB_DESCRIPTOR_HPP
-#define XTD_UC_USB_DESCRIPTOR_HPP
+#ifndef XTD_UC_USB_DESCRIPTION_HPP
+#define XTD_UC_USB_DESCRIPTION_HPP
 // This file contains the necessary data structures to describe your USB device.
+// NOTE: These are not the USB descriptors themselves, but input to generate
+// them.
 //
 // These datastructures are defined as templates and are used to construct the
 // USB descriptors to send to the host as well as configure the hardware to
@@ -88,42 +90,54 @@ namespace xtd {
             usb_transfer_dir dir_ = usb_transfer_dir::out,  // Out for control endpoints
             uint8_t interval_ = 1,  // Must be '1' for isochronouse, or [1,255] for interrupt
             usb_sync_type sync_ = usb_sync_type::no_sync,  // Only for isochronous
-            usb_usage_type usage_ = usb_usage_type::data   // Only for isochronouse
+            usb_usage_type usage_ = usb_usage_type::data   // Only for isochronous
             >
-  struct usb_endpoint{
+  struct usb_endpoint_desc {
   public:
     constexpr static usb_transfer_type type = type_;
     constexpr static usb_transfer_dir direction = dir_;
-    constexpr static uint16_t max_packet = packet_size_;
+    constexpr static uint16_t max_packet_size = packet_size_;
 
     constexpr static usb_sync_type sync = sync_;
     constexpr static usb_usage_type usage = usage_;
-    constexpr static uint8_t interval = interval_;
+    constexpr static uint8_t polling_interval = interval_;
 
     // Describe HW requirements
     constexpr static uint8_t hw_flags = hw_flags_;
   };
 
   template <typename usb_class_type, const char* descr, typename... if_endpoints>
-  struct usb_interface {
+  struct usb_interface_desc {
   public:
     using endpoints_tuple = tuple<if_endpoints...>;
-    using usb_class_description = usb_class_type;
-
-    constexpr static uint8_t alternate_setting = 0;
-    constexpr static uint8_t num_endpoints = endpoints_tuple::size();
-    constexpr static const char* description_string = descr;
-
-    constexpr static endpoints_tuple endpoints = endpoints_tuple();
+    using interface_class = usb_class_type;
+    constexpr static const char* description = descr;
   };
 
-  template <const char* descr, uint8_t flags, int max_current_mA, typename... interfaces>
-  struct usb_config {};
+  template <const char* descr, uint8_t flags, int max_current_mA, typename... ifs>
+  struct usb_config_desc {
+    using interfaces = tuple<ifs...>;
+    constexpr static const char* description = descr;
+    constexpr static uint8_t max_current = max_current_mA;
+  };
 
-  template <uint16_t usb_version, typename usb_class_type, uint16_t vendor_id, uint16_t product_id,
-            uint16_t product_ver, const char* mfg_name, const char* product_name,
-            const char* serial, typename control_endpoint, typename... configs>
-  struct usb_device_traits {};
+  template <uint16_t usb_ver, typename usb_class_type, uint16_t vendor_id_, uint16_t product_id_,
+            uint16_t product_ver_, const char* mfg_name, const char* product_name_,
+            const char* serial, typename control_ep, typename... configs>
+  struct usb_device_desc {
+    using device_class = usb_class_type;
+    using configurations = tuple<configs...>;
+    using control_endpoint = control_ep;
+
+    constexpr static uint16_t usb_version = usb_ver;
+    constexpr static uint16_t vendor_id = vendor_id_;
+    constexpr static uint16_t product_id = product_id_;
+    constexpr static uint16_t product_ver = product_ver_;
+
+    constexpr static const char* vendor_name = mfg_name;
+    constexpr static const char* product_name = product_name_;
+    constexpr static const char* product_serial = product_serial;
+  };
 
 }  // namespace xtd
 
