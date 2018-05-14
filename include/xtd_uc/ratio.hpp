@@ -78,20 +78,20 @@ namespace xtd {
 
   // computes x*r where r is a ratio<> object.
   template <typename R, typename T,
-            round_style rounding = round_style::nearest>  // todo; enable only for r is ratio
+            round_style rounding = round_style::truncate>  // todo; enable only for r is ratio
   constexpr T
   ratio_scale(T value) {
     if (numeric_limits<T>::is_integer) {
       // todo: use a computation that doesn't overflow
       if (rounding == round_style::nearest) {
         auto p = value * R::num;
-        return static_cast<T>((p + sign(p) * (R::den / 2)) / R::den);
+        return (p + sign(p) * (R::den / 2)) / R::den;
       } else if (rounding == round_style::truncate) {
-        return static_cast<T>(value * R::num / R::den);
+        return value * R::num / R::den;
       } else if (rounding == round_style::floor) {
-        return static_cast<T>((value * R::num - ((R::den+1) / 2)) / R::den);
+        return (value * R::num - ((R::den + 1) / 2)) / R::den;
       } else {  // ceil
-        return static_cast<T>((value * R::num + R::den - 1) / R::den);
+        return (value * R::num + R::den - 1) / R::den;
       }
     } else {
       return R::num * value / R::den;
@@ -100,10 +100,11 @@ namespace xtd {
 
   // given a value x and two ratios, r_left and r_right, let: y * r_left = x * r_right
   // this function computes 'y' such tht the above expression holds.
-  template <typename r_left, typename r_right, typename T>
+  template <typename r_left, typename r_right, typename T,
+            round_style rounding = round_style::truncate>
   constexpr T ratio_convert(T x) {
     using scale = ratio_divide<r_right, r_left>;
-    return ratio_scale<scale>(x);
+    return ratio_scale<scale, T, rounding>(x);
   }
 
 }  // namespace xtd

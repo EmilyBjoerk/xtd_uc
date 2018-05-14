@@ -6,8 +6,8 @@
 #include "ratio.hpp"
 
 #ifdef ENABLE_TEST
-#include <ostream>
 #include <iomanip>
+#include <ostream>
 #endif
 
 namespace xtd {
@@ -23,7 +23,7 @@ namespace xtd {
 
       template <class Rep2, class Period2>
       constexpr duration(const duration<Rep2, Period2>& d)
-          : ticks(ratio_convert<period, Period2>(static_cast<rep>(d.count()))) {}
+      : ticks(ratio_convert<period, Period2, decltype(rep()+Rep2())>(d.count())) {}
 
       duration& operator=(const duration&) = default;
 
@@ -111,18 +111,18 @@ namespace xtd {
     using hours = duration<int16_t, ratio<3600>>;   // +- 3.7 years
 
     // Non-standard extensions
-    using days = duration<int8_t, ratio<24L * 3600L>>;  // +- 127 days
+    using days = duration<int16_t, ratio<24L * 3600L>>;  // +- 127 days
 
 #ifdef ENABLE_TEST
     template <typename R, typename P>
     std::ostream& operator<<(std::ostream& os, const duration<R, P>& d) {
       int h = ratio_convert<hours::period, P>(d.count());
       auto rh = d - hours(h);
-      int m = ratio_convert<minutes::period, P>(rh.count());
+      int m = ratio_convert<minutes::period, typename decltype(rh)::period>(rh.count());
       auto rm = rh - minutes(m);
-      int s = ratio_convert<seconds::period, P>(rm.count());
+      int s = ratio_convert<seconds::period, typename decltype(rm)::period>(rm.count());
       auto rs = rm - seconds(s);
-      int ms = ratio_convert<milliseconds::period, P>(rs.count());
+      int ms = ratio_convert<milliseconds::period, typename decltype(rs)::period>(rs.count());
 
       return os << std::setfill('0') << std::setw(2) << h << ":" << std::setfill('0')
                 << std::setw(2) << m << ":" << std::setfill('0') << std::setw(2) << s << "."
@@ -163,6 +163,22 @@ namespace xtd {
       constexpr explicit time_point(const duration& d) : m_d(d) {}
       constexpr duration time_since_epoch() const { return m_d; }
 
+      time_point& operator=(const time_point&) = default;
+
+      bool operator==(const time_point& rhs) const{
+	return m_d == rhs.m_d;
+      };
+
+      bool operator!=(const time_point& rhs) const{
+	return !(*this == rhs);
+      };
+
+      template<typename D>
+      time_point& operator = (const time_point<Clock,D>& that){
+	m_d = that.time_since_epoch();
+	return (*this);
+      }
+      
     private:
       duration m_d;
     };
