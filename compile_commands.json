@@ -3,8 +3,9 @@
         "arguments": [
             "c++",
             "-c",
-            "--std=c++14",
+            "-std=c++14",
             "-g",
+            "-O0",
             "-Wall",
             "-Wextra",
             "-pedantic",
@@ -14,11 +15,13 @@
             "-DF_CPU=8000000",
             "-D__AVR__=1",
             "-D__AVR_MEGA__",
+            "-DHAS_STL",
+            "-DENABLE_TEST",
             "-o",
-            "test/tuple.o",
-            "test/tuple.cpp"
+            "test/cmath.o",
+            "test/cmath.cpp"
         ],
-        "directory": "/home/emily/workspace/xtd_uc",
-        "file": "test/tuple.cpp"
+        "directory": "/home/emily/workspace/Waterino/firmware/xtd_uc",
+        "file": "test/cmath.cpp"
     }
 ]

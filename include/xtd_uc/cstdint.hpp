@@ -4,23 +4,24 @@
 
 #include <stdint.h>
 
-namespace xtd{
+namespace xtd {
 
 #if __AVR__ == 1
-#if __AVR_MEGA__
-    using native_int = int8_t;
-    using native_uint = uint8_t;
+  using native_int = int8_t;
+  using native_uint = uint8_t;
 
-    using fast_size_t = native_uint;
+  using fast_size_t = native_uint;
 
-    using size_t = unsigned int;
+  using size_t = unsigned int;
 #else
-#error "AVR defined but no supported family defined!"
-#endif //__AVR_MEGA__
-#else
-#error "No supported MCU defined!"
-#endif //__AVR
-    
+  using native_int = int8_t;
+  using native_uint = uint8_t;
+
+  using fast_size_t = native_uint;
+
+  using size_t = unsigned int;
+
+#endif  //__AVR
 }
 
 #endif

@@ -161,7 +161,7 @@ namespace xtd {
       using scale = scales;
       using value_type = value;
 
-      constexpr quantity(value_type val) : v(val){};
+      constexpr quantity(value_type val=0) : v(val){};
 
       template <typename V, typename S>
       constexpr quantity(const quantity<V, units, S>& q) {
@@ -305,6 +305,8 @@ namespace xtd {
     MAKE_LITERAL(m_s2, units::acceleration, int, ratio<1>)
 
     MAKE_LITERAL(s, units::second, int, ratio<1>)
+
+    MAKE_LITERAL(K, units::kelvin, int, ratio<1>)
 
     MAKE_LITERAL_PREFIXES(m, units::metre, int)
     MAKE_LITERAL_PREFIXES(N, units::newton, int)

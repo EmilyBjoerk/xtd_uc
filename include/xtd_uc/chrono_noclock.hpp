@@ -23,7 +23,7 @@ namespace xtd {
 
       template <class Rep2, class Period2>
       constexpr duration(const duration<Rep2, Period2>& d)
-      : ticks(ratio_convert<period, Period2, decltype(rep()+Rep2())>(d.count())) {}
+          : ticks(ratio_convert<period, Period2, decltype(rep() + Rep2())>(d.count())) {}
 
       duration& operator=(const duration&) = default;
 
@@ -112,24 +112,7 @@ namespace xtd {
 
     // Non-standard extensions
     using days = duration<int16_t, ratio<24L * 3600L>>;  // +- 127 days
-
-#ifdef ENABLE_TEST
-    template <typename R, typename P>
-    std::ostream& operator<<(std::ostream& os, const duration<R, P>& d) {
-      int h = ratio_convert<hours::period, P>(d.count());
-      auto rh = d - hours(h);
-      int m = ratio_convert<minutes::period, typename decltype(rh)::period>(rh.count());
-      auto rm = rh - minutes(m);
-      int s = ratio_convert<seconds::period, typename decltype(rm)::period>(rm.count());
-      auto rs = rm - seconds(s);
-      int ms = ratio_convert<milliseconds::period, typename decltype(rs)::period>(rs.count());
-
-      return os << std::setfill('0') << std::setw(2) << h << ":" << std::setfill('0')
-                << std::setw(2) << m << ":" << std::setfill('0') << std::setw(2) << s << "."
-                << std::setfill('0') << std::setw(3) << ms;
-    }
-#endif
-  }  // namespace chrono
+  }                                                      // namespace chrono
 
   namespace chrono_literals {
 
@@ -165,20 +148,16 @@ namespace xtd {
 
       time_point& operator=(const time_point&) = default;
 
-      bool operator==(const time_point& rhs) const{
-	return m_d == rhs.m_d;
-      };
+      bool operator==(const time_point& rhs) const { return m_d == rhs.m_d; };
 
-      bool operator!=(const time_point& rhs) const{
-	return !(*this == rhs);
-      };
+      bool operator!=(const time_point& rhs) const { return !(*this == rhs); };
 
-      template<typename D>
-      time_point& operator = (const time_point<Clock,D>& that){
-	m_d = that.time_since_epoch();
-	return (*this);
+      template <typename D>
+      time_point& operator=(const time_point<Clock, D>& that) {
+        m_d = that.time_since_epoch();
+        return (*this);
       }
-      
+
     private:
       duration m_d;
     };
@@ -255,6 +234,28 @@ namespace xtd {
       return duration<int64_t, new_period>(duration<int64_t, new_period>(lhs).count() +
                                            duration<int64_t, new_period>(rhs).count());
     }
+
+#ifdef ENABLE_TEST
+    template <typename R, typename P>
+    std::ostream& operator<<(std::ostream& os, const duration<R, P>& d) {
+      int h = ratio_convert<hours::period, P>(d.count());
+      auto rh = d - hours(h);
+      int m = ratio_convert<minutes::period, typename decltype(rh)::period>(rh.count());
+      auto rm = rh - minutes(m);
+      int s = ratio_convert<seconds::period, typename decltype(rm)::period>(rm.count());
+      auto rs = rm - seconds(s);
+      int ms = ratio_convert<milliseconds::period, typename decltype(rs)::period>(rs.count());
+
+      return os << std::setfill('0') << std::setw(2) << h << ":" << std::setfill('0')
+                << std::setw(2) << m << ":" << std::setfill('0') << std::setw(2) << s << "."
+                << std::setfill('0') << std::setw(3) << ms;
+    }
+    template <typename C, typename D>
+    std::ostream& operator<<(std::ostream& os, const time_point<C, D>& t) {
+      return os << t.time_since_epoch();
+    }
+#endif
+
   }  // namespace chrono
 }  // namespace xtd
 

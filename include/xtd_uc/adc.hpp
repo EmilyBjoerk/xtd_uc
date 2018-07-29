@@ -47,7 +47,7 @@ namespace xtd {
 
     inline void disable_digital() {
       // Disable digital inputs from analog pins to save power.
-      DIDR0 = 0b111111 << ADC0D;
+      DIDR0 = static_cast<uint8_t>(0b111111 << ADC0D);
     }
 
     uint16_t blocking_read();

@@ -30,6 +30,7 @@
 *.exe
 *.out
 *.app
+native_tests
 
 # Backup files
 *~

@@ -14,6 +14,10 @@ namespace xtd {
     b = c;
   }
 
+  inline bool test_bit(volatile uint8_t& sfr, int bit) {
+    return (sfr & (1 << bit)) != 0;
+  }
+
   inline void set_bit(volatile uint8_t& sfr, int bit) {
     sfr = static_cast<uint8_t>(sfr | (1 << bit));
   }
