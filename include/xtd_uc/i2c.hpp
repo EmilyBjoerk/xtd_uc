@@ -9,9 +9,10 @@ namespace xtd {
   using i2c_address = uint8_t;
   using i2c_data = uint8_t;
 
+  constexpr i2c_address i2c_no_addr = 0xFF;
   constexpr i2c_address i2c_general_call_addr = 0x00;
 
-  enum i2c_slave_state : char{
+  enum i2c_slave_state : char {
     i2c_slave_disabled,  // Slave mode is not enabled or i2c is disabled
     i2c_slave_idle,      // Slave is not currently addressed
     i2c_slave_busy,      // Slave is busy transmitting or waiting for next command
@@ -29,8 +30,7 @@ namespace xtd {
     i2c_master_idle
   };
 
-  enum i2c_general_call : char { enabled, disabled };
-  enum i2c_read_response : char { ack, nack };
+  enum i2c_read_response : char { i2c_ack, i2c_nack };
   enum i2c_txn_mode : char { write, read };
 
   // The master transaction class models a bus transaction as a master.
@@ -54,8 +54,7 @@ namespace xtd {
 
     // True if the master transaction is still usable
     bool good() const {
-      return status() != i2c_master_lost_arbitration &&
-             status() != i2c_master_nobody_home;
+      return status() != i2c_master_lost_arbitration && status() != i2c_master_nobody_home;
     }
 
     // Starts an address frame in the transaction. This is needed in order
@@ -86,7 +85,7 @@ namespace xtd {
       while (good() && p != end) {
         if (status() == i2c_master_write_acked) {
           p++;
-          if (i2c_read_response::nack == write_response()) {
+          if (i2c_nack == write_response()) {
             break;
           }
         }
@@ -120,7 +119,7 @@ namespace xtd {
         if (status() == i2c_master_read_pending) {
           *p = read_raw();
           p++;
-          read_ack(p == end ? i2c_read_response::nack : i2c_read_response::ack);
+          read_ack(p == end ? i2c_nack : i2c_ack);
         }
       }
       return p - end;
@@ -167,7 +166,7 @@ namespace xtd {
     // react on the General Call Address (GCA).
     //
     // Please also see comments for slave_state().
-    void slave_on(i2c_address addr, i2c_general_call gca);
+    void slave_on(i2c_address addr, bool respond_to_gca);
 
     // Disables the slave device. Any in-flight transmissions are completed before
     // turning off.
@@ -193,16 +192,6 @@ namespace xtd {
       return ans;
     }
 
-    // Must only be called if slave_state() == transmit
-    // Always succeeds (data is put on the wire). If the receiver acks the
-    // data slave_state() will become i2c_read again and another byte can
-    // be transmitted.
-    // If last_byte is true, then no more read requests will be accepted
-    // until a new START condition has appeared. Will automatically respond
-    // 0xFF to any and all superfluous read requests.
-    void slave_transmit(i2c_data data, bool last_byte);
-
-  private:
     // Must only be called if: slave_state() == receive
     // Always succeeds, stretches the I2C clock until slave_ack() is called.
     // If slave_ack() is not called after receive_raw then the transaction will
@@ -213,15 +202,26 @@ namespace xtd {
     // Transmits a response (ack/nack) in response to a write into the salve.
     void slave_ack(i2c_read_response response);
 
+    // Must only be called if slave_state() == transmit
+    // Always succeeds (data is put on the wire). If the receiver acks the
+    // data slave_state() will become i2c_read again and another byte can
+    // be transmitted.
+    // If last_byte is true, then no more read requests will be accepted
+    // until a new START condition has appeared. Will automatically respond
+    // 0xFF to any and all superfluous read requests.
+    void slave_transmit(i2c_data data, bool last_byte);
+
+  private:
     void expect_bits(uint8_t bits, uint8_t next_state);
     void release_scl();
     void await_start();
     void ready_to_read();
     void write(uint8_t data);
 
-    uint8_t m_addr = -1; // 7 bits MSB aligned
-    i2c_general_call m_respond_to_gc;
+    uint8_t m_addr = i2c_no_addr;  // 7 bits MSB aligned
+    bool m_respond_to_gc = false;
     uint8_t m_next_state = 0;
+    bool m_tx_done = false;
   };
 
 }  // namespace xtd

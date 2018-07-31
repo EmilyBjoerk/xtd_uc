@@ -15,18 +15,18 @@ namespace xtd {
   void i2c_master_transaction::restart(i2c_address /*addr*/, i2c_txn_mode /*mode*/) {}
   void i2c_master_transaction::stop() {}
   void i2c_master_transaction::write(i2c_data /*data*/) {}
-  i2c_read_response i2c_master_transaction::write_response() { return nack; }
-  i2c_data i2c_master_transaction::read_raw() {return 0;}
+  i2c_read_response i2c_master_transaction::write_response() { return i2c_nack; }
+  i2c_data i2c_master_transaction::read_raw() { return 0; }
   void i2c_master_transaction::read_ack(i2c_read_response /*response*/) {}
 
   // ---------------------------------------------------------------------------
   // Implementation of: i2c_device
   // ---------------------------------------------------------------------------
 
-  i2c_device::i2c_device(){}
-  i2c_device::~i2c_device(){}
+  i2c_device::i2c_device() {}
+  i2c_device::~i2c_device() {}
 
-  void i2c_device::on_irq(){}
+  void i2c_device::on_irq() {}
 
   uint32_t i2c_device::enable(uint32_t bitrate) {
     clr_bit(PRR, PRTWI);
@@ -69,8 +69,8 @@ namespace xtd {
     PRR |= _BV(PRTWI);
   }
 
-  void i2c_device::slave_on(i2c_address addr, i2c_general_call gca) {
-    TWAR = addr + (gca == i2c_general_call::enabled ? 1 : 0);
+  void i2c_device::slave_on(i2c_address addr, bool respond_to_gca) {
+    TWAR = addr + (respond_to_gca ? 1 : 0);
     set_bit(TWCR, TWEA);  // Enable acking slave address.
   }
 
@@ -82,15 +82,15 @@ namespace xtd {
     if (test_bit(PRR, PRTWI) || test_bit(TWCR, TWEN)) {
       return i2c_slave_disabled;
     }
-    //auto st = TWSR >> 3;  // 5 bits, 32 values
-    //switch (st) { case:
+    // auto st = TWSR >> 3;  // 5 bits, 32 values
+    // switch (st) { case:
     return i2c_slave_disabled;
   }
 
   i2c_data i2c_device::slave_receive_raw() { return TWDR; }
 
   void i2c_device::slave_ack(i2c_read_response response) {
-    if (response == i2c_read_response::ack) {
+    if (response == i2c_ack) {
       set_bit(TWCR, TWEA);
     } else {
       clr_bit(TWCR, TWEA);
