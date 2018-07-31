@@ -30,7 +30,9 @@
 *.exe
 *.out
 *.app
-native_tests
+unit_tests
+*.bin
+default.profraw
 
 # Backup files
 *~

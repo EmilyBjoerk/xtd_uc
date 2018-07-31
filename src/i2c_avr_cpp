@@ -1,0 +1,98 @@
+#include "xtd_uc/i2c.hpp"
+
+namespace xtd {
+
+  void i2c_await_status() {
+    while (!(TWCR & _BV(TWINT)))
+      ;
+  }
+
+  auto i2c_status() {
+    constexpr twsr_status_mask = 0xF8;
+    return TWSR & twsr_status_mask;
+  }
+
+  bool write(uint8_t data) {
+    // Technically, the hardware allows us to transmit data even if the other
+    // end nack'ed the address or the last byte. However we will disallow this in the
+    // API.
+    if (TWSR != 0x18 &&  // First write after slave acked address.
+        TWSR != 0x28) {  // Further byte was written and acked.
+      return false;
+    }
+
+    TWDR = data;
+    TWCR |= _BV(TWINT);
+    update_status();
+  }
+
+    bool can_read() const {
+      return good() &&         // Not sure if this is necessary, shouldn't hurt at least.
+             (TWSR == 0x40 ||  // Slave acked read address.
+              TWSR == 0x50);   // We received one byte and sent an ack, expecting more.
+    }
+
+  void i2c_stop() { TWCR |= _BV(TWINT) | _BV(TWSTO); }
+  void i2c_start() { TWCR |= _BV(TWINT) | _BV(TWSTA); }
+
+  i2c_master_transaction::i2c_master_transaction(i2c_error status) : m_status(status) {}
+
+  i2c_master_transaction::~i2c_master_transaction() {}
+
+  i2c_device::enable() { TWCR = _BV(TWEN); }
+  i2c_device::disable() {}
+
+  bool i2c_device::can_write() const {}
+
+  i2c_master_transaction i2c_device::transaction(i2c_address address) {
+    if (!enabled()) {
+      return i2c_master_transaction(I2C_DISABLED);
+    }
+
+    // TODO: Add timeout
+    while (0xF8 != TWSR)
+      ;  // Wait until we exit current mode
+
+    i2c_start();
+    i2c_await_status();  // TODO: Add timeout
+
+    return i2c_master_transaction(i2c_status() == START ? i2c_error::SUCCESS
+                                                        : i2c_error::START_FAILED);
+  };
+
+  if (i2c_status() == START) {
+    TWDR = address;
+    TWCR |= _BV(TWINT);
+    wait_for_i2c();
+
+    switch (i2c_status()) {
+      case 0x48:  // FALLTHROUGH
+      case 0x20:
+        m_status = i2c_error::NOBODY_HOME;
+        break;
+      case 0x38:
+        m_status = i2c_error::LOST_ARBITRATION;
+        break;
+      case 0x68:  // Lost arbitration, addressed as slave write instead
+        i2c_on_slave_addressed(i2c_write);
+        m_status = i2c_error::LOST_ARBITRATION;
+        break;
+      case 0x78:  // Lost arbitration, addressed as general call instead
+        i2c_on_slave_addressed(i2c_general_call);
+        m_status = i2c_error::LOST_ARBITRATION;
+        break;
+      case 0xB0:  // Lost arbitration, addressed as slave read instead
+        i2c_on_slave_addressed(i2c_read);
+        m_status = i2c_error::LOST_ARBITRATION;
+        break;
+      case 0x40:  // FALLTHROUGH
+      case 0x18:
+        m_status = i2c_error::SUCCESS;
+        break;
+    }
+  } else {
+    m_status = i2c_error::START_FAILED;
+  }
+}  // namespace xtd
+
+}  // namespace xtd

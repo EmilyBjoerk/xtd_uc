@@ -9,7 +9,6 @@
 
 #if UART_BAUD < 1
 #define UART_BAUD 9600
-#warning "UART_BAUD was not defined, using 9600 baud."
 #endif
 
 #if UART_DATA_BITS < 5
