@@ -13,11 +13,12 @@ namespace xtd {
   constexpr i2c_address i2c_general_call_addr = 0x00;
 
   enum i2c_slave_state : char {
-    i2c_slave_disabled,  // Slave mode is not enabled or i2c is disabled
-    i2c_slave_idle,      // Slave is not currently addressed
-    i2c_slave_busy,      // Slave is busy transmitting or waiting for next command
-    i2c_slave_transmit,  // Slave is expected to transmit a response to a read
-    i2c_slave_receive    // Slave is receiving a write
+    i2c_slave_disabled,       // Slave mode is not enabled or i2c is disabled
+    i2c_slave_idle,           // Slave is not currently addressed
+    i2c_slave_busy,           // Slave is busy transmitting or waiting for next command
+    i2c_slave_transmit,       // Slave is expected to transmit a response to a read
+    i2c_slave_receive,        // Slave is receiving a write
+    i2c_slave_internal_error  // We done gone goofed up good
   };
 
   enum i2c_master_state : char {
@@ -147,7 +148,17 @@ namespace xtd {
     // Call this form the USI_START ISR before doing anything else.
     void on_usi_start();
     // Call this form the USI_OVF ISR before doing anything else.
-    void on_usi_ovf();
+    //
+    // If the return is i2c_slave_receive exactly one call must be made to either
+    // slave_ack(...) or slave_receive(...); calling slave_receive_raw() will repeatedly
+    // return the value read from the wire.
+    //
+    // If the return value is i2c_slavc_transmit, slave_transmit(...) must be called
+    // exactly once.
+    //
+    // Failure to do so will leave the i2c FSM in a stuck state, clock stretching SCL
+    // and leave the master hanging.
+    i2c_slave_state on_usi_ovf();
 #elif __AVR_MEGA__
     void on_irq();
 #else
@@ -171,17 +182,6 @@ namespace xtd {
     // Disables the slave device. Any in-flight transmissions are completed before
     // turning off.
     void slave_off();
-
-    // Returns the current state of the slave device.
-    //
-    // When slave mode is on, this MUST be regularly checked, either from the
-    // TWINT ISR or by polling. Failure to do so may leave the master hanging
-    // indefinitely if they don't have a timeout.
-    //
-    // If incoming_write is returned the slave must respond with a slave_receive
-    // call. If incoming_read is returned, the slave must respond with a
-    // slave_transmit call.
-    i2c_slave_state slave_state() const;
 
     // Must only be called if: slave_state() == receive
     // Always succeeds, reply ack if more data can be handled/makes sense
@@ -213,15 +213,14 @@ namespace xtd {
 
   private:
     void expect_bits(uint8_t bits, uint8_t next_state);
-    void release_scl();
     void await_start();
-    void ready_to_read();
-    void write(uint8_t data);
+    void read_bits(uint8_t bits, uint8_t next_state);
+    void write_bits(uint8_t data, uint8_t bits, uint8_t next_state);
+    bool is_for_us(i2c_address addr) const;
 
-    uint8_t m_addr = i2c_no_addr;  // 7 bits MSB aligned
-    bool m_respond_to_gc = false;
-    uint8_t m_next_state = 0;
-    bool m_tx_done = false;
+    i2c_address m_addr = i2c_no_addr;  // 7 bits MSB aligned, LSB is GCE flag
+    volatile uint8_t m_next_state = 0;
+    volatile bool m_tx_done = false;
   };
 
 }  // namespace xtd
