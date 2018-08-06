@@ -14,16 +14,17 @@ namespace xtd {
     b = c;
   }
 
-  inline bool test_bit(volatile uint8_t& sfr, int bit) {
-    return (sfr & (1 << bit)) != 0;
-  }
+  inline bool test_bit(volatile uint8_t& sfr, int bit) { return (sfr & (1 << bit)) != 0; }
 
-  inline void set_bit(volatile uint8_t& sfr, int bit) {
-    sfr = static_cast<uint8_t>(sfr | (1 << bit));
-  }
+  inline void set_bit(volatile uint8_t& sfr, int bit) { sfr |= (1 << bit); }
 
-  inline void clr_bit(volatile uint8_t& sfr, int bit) {
-    sfr = static_cast<uint8_t>(sfr & ~(1 << bit));
+  inline void clr_bit(volatile uint8_t& sfr, int bit) { sfr &= ~(1 << bit); }
+
+  inline void force_bit(volatile uint8_t& sfr, int bit, bool v) {
+    if (v)
+      set_bit(sfr, bit);
+    else
+      clr_bit(sfr, bit);
   }
 
   // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2009/n2951.html

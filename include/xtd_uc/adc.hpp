@@ -14,6 +14,27 @@
 #endif
 
 namespace xtd {
+  enum adc_vref : uint8_t {
+#ifdef __AVR_ATtiny85__
+    adc_internal_vcc = 0b000,
+    adc_external_aref = 0b001,
+    adc_internal_1v1 = 0b010,
+    adc_internal_2v56_no_bypass = 0b110,
+    adc_internal_2v56_bypass = 0b111
+#endif
+  };
+  void adc_enable(uint32_t adc_hz, bool msb_align_result, adc_vref vref, uint8_t ch);
+  void adc_disable();
+  void adc_change_speed(uint32_t hz);
+  void adc_change_vref(adc_vref vref, uint8_t ch);
+  void adc_dio_pin(uint8_t channel, bool enabled);
+
+  void adc_select_ch(uint8_t channel);
+  uint16_t adc_read_single_low_noise();
+
+  void adc_await_conversion_complete();
+
+#ifdef __AVR_MEGA__
   namespace adc {
     enum class vref : uint8_t { external_aref = 0b00, internal_vcc = 0b01, internal_1_1v = 0b11 };
 
@@ -51,7 +72,8 @@ namespace xtd {
     }
 
     uint16_t blocking_read();
-  }
-}
+  }  // namespace adc
+#endif
+}  // namespace xtd
 
 #endif

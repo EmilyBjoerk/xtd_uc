@@ -78,14 +78,14 @@ namespace xtd {
     clr_bit(TWCR, TWEA);  // Enable acking slave address.
   }
 
-  i2c_slave_state i2c_device::slave_state() const {
+  /*  i2c_slave_state i2c_device::slave_state() const {
     if (test_bit(PRR, PRTWI) || test_bit(TWCR, TWEN)) {
       return i2c_slave_disabled;
     }
     // auto st = TWSR >> 3;  // 5 bits, 32 values
     // switch (st) { case:
     return i2c_slave_disabled;
-  }
+    }*/
 
   i2c_data i2c_device::slave_receive_raw() { return TWDR; }
 

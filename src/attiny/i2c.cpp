@@ -58,8 +58,7 @@ namespace xtd {
         read_bits(1, tx_ackd);  // Read the ack/nack
         return i2c_slave_busy;
       case tx_ackd: {
-        bool more_data = USIDR & 1;
-        if (!more_data) {
+        if ((USIDR & 0x01)) {
           await_start();
           return i2c_slave_idle;
         }
@@ -70,9 +69,15 @@ namespace xtd {
           slave_transmit(0xFF, true);
           return i2c_slave_busy;
         } else {
+          // Disable overflow IRQ until user transmits something while keeping the clock stretched
+          // This allows the user to return from their ISR and do some processing with IRQs enabled
+          // before responding
+          USICR &= ~_BV(USIOIE);
           return i2c_slave_transmit;
         }
       case rx_done:
+        // See comment for tx_wait
+        USICR &= ~_BV(USIOIE);
         return i2c_slave_receive;
       default:
         return i2c_slave_internal_error;
@@ -123,6 +128,7 @@ namespace xtd {
   void i2c_device::expect_bits(uint8_t bits, uint8_t next_state) {
     m_next_state = next_state;
     USISR = ((16 - (bits << 1)) & 0xF) | 0x70;
+    USICR |= _BV(USIOIE);  // In case it was disabled
   }
 
   void i2c_device::await_start() {

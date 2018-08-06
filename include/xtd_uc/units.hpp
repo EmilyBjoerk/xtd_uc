@@ -161,8 +161,13 @@ namespace xtd {
       using scale = scales;
       using value_type = value;
 
-      constexpr quantity(value_type val=0) : v(val){};
+      constexpr quantity() = default;
+      constexpr quantity(value_type val) : v(val){};
+      constexpr quantity(const quantity&) = default;
+      constexpr quantity(quantity&&) = default;
 
+      constexpr quantity& operator = (const quantity&) = default;
+      
       template <typename V, typename S>
       constexpr quantity(const quantity<V, units, S>& q) {
         // a * b / c = d * e / f   <=>    a = d * (ce/bf)
