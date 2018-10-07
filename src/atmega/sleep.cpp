@@ -19,7 +19,7 @@ namespace xtd {
   // constant expansion to remove the conversion overhead.
   void sleep(const steady_clock::duration& d, bool deep, irq_wake_callback irq_wake) {
     constexpr auto irq_duration =
-        steady_clock::duration(duration<steady_clock::rep, steady_clock::irq_period>(1));
+        steady_clock::duration(duration<steady_clock::value_type, steady_clock::irq_period>(1));
     const auto end = steady_clock::now() + d;
     const auto end_safe = end - irq_duration;
 

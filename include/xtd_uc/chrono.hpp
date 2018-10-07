@@ -52,15 +52,15 @@ namespace xtd {
     //     short and few, and also keep code blocks with interrupts disabled to a minimum length.
     class steady_clock {
     public:
-      using rep = signed long long;
-      using period = ratio_t<1024UL, F_CPU>;  // For 16MHz -> 1 : 15625
-      using duration = xtd::chrono::duration<rep, period>;
+      using value_type = signed long long;
+      using scale = ratio_t<1024UL, F_CPU>;  // For 16MHz -> 1 : 15625
+      using duration = xtd::chrono::duration<value_type, scale>;
       using time_point = xtd::chrono::time_point<steady_clock, duration>;
-      using irq_period = ratio_multiply<period, ratio<256>>;
+      using irq_period = ratio_multiply<scale, ratio<256>>;
 
-      static_assert(decltype(time_point() + duration())::period::den == duration::period::den,
+      static_assert(decltype(time_point() + duration())::scale::den == duration::scale::den,
                     "period mismatch");
-      static_assert(decltype(time_point() + duration())::period::num == duration::period::num,
+      static_assert(decltype(time_point() + duration())::scale::num == duration::scale::num,
                     "num mismatch");
 
       constexpr static bool is_steady = true;
@@ -71,7 +71,7 @@ namespace xtd {
 #ifndef ENABLE_TEST
       friend void ::TIMER2_OVF_vect(void);
 #endif
-      static volatile rep ticks;
+      static volatile value_type ticks;
     };
   }  // namespace chrono
 }  // namespace xtd

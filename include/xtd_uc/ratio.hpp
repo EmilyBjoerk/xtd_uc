@@ -55,31 +55,35 @@ namespace xtd {
   // template <typename R1, typename R2>
   // constexpr bool ratio_less_equal_v = ratio_less<R1, R2>::value;
 
-  // typedef ratio<1, 1000000000000000000000000ULL> yocto;
-  // typedef ratio<1, 1000000000000000000000ULL> zepto;
-  typedef ratio<1, 1000000000000000000ULL> atto;
-  typedef ratio<1, 1000000000000000ULL> femto;
-  typedef ratio<1, 1000000000000ULL> pico;
-  typedef ratio<1, 1000000000ULL> nano;
-  typedef ratio<1, 1000000ULL> micro;
-  typedef ratio<1, 1000ULL> milli;
-  typedef ratio<1, 100ULL> centi;
-  typedef ratio<1, 10ULL> deci;
-  typedef ratio<10ULL, 1> deca;
-  typedef ratio<100ULL, 1> hecto;
-  typedef ratio<1000ULL, 1> kilo;
-  typedef ratio<1000000ULL, 1> mega;
-  typedef ratio<1000000000ULL, 1> giga;
-  typedef ratio<1000000000000ULL, 1> tera;
-  typedef ratio<1000000000000000ULL, 1> peta;
-  typedef ratio<1000000000000000000ULL, 1> exa;
-  // typedef ratio<1000000000000000000000ULL, 1> zetta;
-  // typedef ratio<1000000000000000000000000ULL, 1> yotta;
+  namespace si_prefixes {
+    // typedef ratio<1, 1000000000000000000000000ULL> yocto;
+    // typedef ratio<1, 1000000000000000000000ULL> zepto;
+    typedef ratio<1, 1000000000000000000ULL> atto;
+    typedef ratio<1, 1000000000000000ULL> femto;
+    typedef ratio<1, 1000000000000ULL> pico;
+    typedef ratio<1, 1000000000ULL> nano;
+    typedef ratio<1, 1000000ULL> micro;
+    typedef ratio<1, 1000ULL> milli;
+    typedef ratio<1, 100ULL> centi;
+    typedef ratio<1, 10ULL> deci;
+    typedef ratio<10ULL, 1> deca;
+    typedef ratio<100ULL, 1> hecto;
+    typedef ratio<1000ULL, 1> kilo;
+    typedef ratio<1000000ULL, 1> mega;
+    typedef ratio<1000000000ULL, 1> giga;
+    typedef ratio<1000000000000ULL, 1> tera;
+    typedef ratio<1000000000000000ULL, 1> peta;
+    typedef ratio<1000000000000000000ULL, 1> exa;
+    // typedef ratio<1000000000000000000000ULL, 1> zetta;
+    // typedef ratio<1000000000000000000000000ULL, 1> yotta;
+  }  // namespace si_prefixes
+
+  using namespace si_prefixes;
 
   // computes x*r where r is a ratio<> object.
   template <typename R, typename T,
             round_style rounding = round_style::truncate>  // todo; enable only for r is ratio
-  constexpr T
+  constexpr auto
   ratio_scale(T value) {
     if (numeric_limits<T>::is_integer) {
       // todo: use a computation that doesn't overflow

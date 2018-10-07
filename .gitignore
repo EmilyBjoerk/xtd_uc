@@ -27,12 +27,13 @@
 *.lib
 
 # Executables
-*.exe
+*.hex
 *.out
 *.app
 unit_tests
 *.bin
 default.profraw
+build/
 
 # Backup files
 *~

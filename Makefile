@@ -4,9 +4,9 @@
 
 # Stuff common to all platforms
 CXXFLAGS=-std=c++14 -g -Wall -Wextra -pedantic -Werror -Iinclude/
-CXXFLAGS_AVR=-Os -fno-threadsafe-statics -fuse-linker-plugin -fpack-struct -fshort-enums -ffunction-sections
-CXXFLAGS_AVR_FLTO=-flto -fwhole-program
-CXX_AVR=avr-g++ $(CXXFLAGS) $(CXXFLAGS_AVR) -DF_CPU=1000000UL
+CXXFLAGS_AVR=-Os -fno-threadsafe-statics -fno-stack-protector -fshort-enums
+CXXFLAGS_AVR_FLTO=-flto -fwhole-program -ffunction-sections -fuse-linker-plugin
+CXX_AVR=avr-g++ $(CXXFLAGS) $(CXXFLAGS_AVR) -DF_CPU=16000000UL
 CXX_HOST=clang++ $(CXXFLAGS) -O0 -g3 -pipe
 CXX_AVR_ATTINY=$(CXX_AVR) -mmcu=attiny85
 CXX_AVR_ATMEGA=$(CXX_AVR) -mmcu=atmega328p
@@ -43,17 +43,23 @@ $(ATTINY): $(ATTINY_OBJECTS)
 $(ATTINY_OBJ_DIR)/%.o: %.cpp $(HEADERS) | build_dir
 	$(CXX_AVR_ATTINY) $(CXXFLAGS_AVR_FLTO) -c $< -o $@
 
-$(ATTINY_OBJ_DIR)/%.s: %.cpp
+$(ATTINY_OBJ_DIR)/%.s: %.cpp | build_dir
 	$(CXX_AVR_ATTINY) -S -fverbose-asm -c $< -o $@
 
 asm-attiny: $(ATTINY_ASSEMBLY)
 
 # ATMega328p
 ATMEGA=atmega.bin
+ATMEGA_BITSTREAM=$(ATMEGA:.bin=.hex)
 ATMEGA_SOURCES=$(wildcard src/*.cpp) $(wildcard src/atmega/*.cpp)
 ATMEGA_OBJ_DIR=build/atmega
 ATMEGA_OBJECTS=$(addprefix $(ATMEGA_OBJ_DIR)/, $(ATMEGA_SOURCES:.cpp=.o))
 ATMEGA_ASSEMBLY=$(ATMEGA_OBJECTS:.o=.s)
+
+
+upload-atmega-test: $(ATMEGA_BITSTREAM)
+# For Arduino Nano 
+	avrdude -v -p m328p -b 115200 -c arduino -P /dev/ttyUSB0 -U flash:w:$(ATMEGA_BITSTREAM):i
 
 $(ATMEGA): $(ATMEGA_OBJECTS)
 	$(CXX_AVR_ATMEGA) $(CXXFLAGS_AVR_FLTO) $(LDFLAGS_AVR) $(ATMEGA_OBJECTS) -o $@
@@ -61,7 +67,7 @@ $(ATMEGA): $(ATMEGA_OBJECTS)
 $(ATMEGA_OBJ_DIR)/%.o: %.cpp $(HEADERS) | build_dir
 	$(CXX_AVR_ATMEGA) $(CXXFLAGS_AVR_FLTO) -c $< -o $@
 
-$(ATMEGA_OBJ_DIR)/%.s: %.cpp
+$(ATMEGA_OBJ_DIR)/%.s: %.cpp | build_dir
 	$(CXX_AVR_ATMEGA) -S -fverbose-asm -c $< -o $@
 
 asm-atmega: $(ATMEGA_ASSEMBLY)
@@ -90,3 +96,7 @@ show-defines:
 
 show-flags:
 	$(CXX) $(CFLAGS) -Q -v -E - < /dev/null
+
+%.hex: %.bin
+	avr-objcopy -O ihex -R .eeprom $< $@
+	avr-size $@

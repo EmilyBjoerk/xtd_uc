@@ -32,15 +32,38 @@ TEST(Quantity, ScaleGreaterEquals) {
   ASSERT_GE(1_F, 999_mF);
 }
 
-TEST(Quantity, UnitMult) {
+TEST(Quantity, Multiplication) {
   ASSERT_EQ(200_N, 20_kg * 10_m_s2);
   ASSERT_EQ(10000_mV, 500_mA * 20_Ohm);
   ASSERT_EQ(10_V, 500_mA * 20_Ohm);
 }
 
+TEST(Quantity, Inversion) { ASSERT_EQ(10_Hz, 1 / 100_ms); }
+
+TEST(Quantity, Division) { ASSERT_EQ(25_uA, 500_mV / 20_kOhm); }
+
+TEST(Quantity, Additions) { ASSERT_EQ(1001_g, 1_kg + 1_g); }
+
+TEST(Quantity, Subtraction) { ASSERT_EQ(999_g, 1_kg - 1_g); }
+
+TEST(Quantity, FreqConversion) {
+  auto f = units::frequency<uint32_t, ratio<1>>(100_kHz);
+  ASSERT_EQ(100000, f.count());
+}
+
 TEST(Quantity, Conversion) {
-  using two_mA = units::quantity<uint8_t, units::ampere, ratio<2,1000>>;
+  using two_mA = units::current<uint8_t, ratio<2, 1000>>;
   two_mA cut = 500_mA;
-  
-  ASSERT_EQ(250, cut.v);
+
+  ASSERT_EQ(250, cut.count());
+}
+
+TEST(Quantity, MakeUnity) {
+  constexpr auto volts = 123_mV;
+  auto unity_volts = units::make_unity_valued<volts.count()>(volts);
+
+  ASSERT_EQ(1, unity_volts.count());
+  static_assert(xtd::is_same_v<units::volt, decltype(unity_volts)::unit>,
+                "Wrong unit for make unity");
+  ASSERT_EQ(volts, unity_volts);
 }

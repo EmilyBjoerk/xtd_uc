@@ -27,9 +27,7 @@ namespace xtd {
       // Enable all power reduction
       PRR = 0xff;
 
-      // Disable digital inputs on adc and the adc
-      adc::disable_digital();
-      adc::disable();
+      adc_disable();
 
       watchdog::reset_timeout();
     }

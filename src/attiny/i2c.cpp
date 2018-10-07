@@ -14,7 +14,15 @@ namespace xtd {
   void scl_low() { PORTB &= ~_BV(PB2); }
   void scl_high() { PORTB |= _BV(PB2); }
 
-  enum i2c_state : char { idle, addr_rx, rx_ackd, rx_done, tx_ackd, tx_wait, tx_done };
+  enum i2c_internal_state : char {
+    state_idle,
+    state_addr_rx,
+    state_rx_ackd,
+    state_rx_done,
+    state_tx_ackd,
+    state_tx_wait,
+    state_tx_done
+  };
 
   i2c_device::i2c_device() {}
   i2c_device::~i2c_device() {}
@@ -31,43 +39,43 @@ namespace xtd {
             (0b11 << USIWM0) |  // TWI mode with clock stretching on ovf (15->0).
             (0b100 << USICLK);  // External clock, USIDR clocked on positive edge.
 
-    read_bits(8, addr_rx);
+    read_bits(8, state_addr_rx);
     USISR |= _BV(USISIF);
   }
 
-  i2c_slave_state i2c_device::on_usi_ovf() {
+  i2c_state i2c_device::on_usi_ovf() {
     switch (m_next_state) {
-      case idle:
+      case state_idle:
         await_start();
-        return i2c_slave_idle;
-      case addr_rx: {
+        return i2c_idle;
+      case state_addr_rx: {
         auto addr = USIDR;
         if (is_for_us(addr)) {
           bool slave_tx = addr & 1;
-          write_bits(0x00, 1, slave_tx ? tx_wait : rx_ackd);
-          return i2c_slave_busy;
+          write_bits(0x00, 1, slave_tx ? state_tx_wait : state_rx_ackd);
+          return i2c_busy;
         } else {
           await_start();
-          return i2c_slave_idle;
+          return i2c_idle;
         }
       }
-      case rx_ackd:
-        read_bits(8, rx_done);
-        return i2c_slave_busy;
-      case tx_done:
-        read_bits(1, tx_ackd);  // Read the ack/nack
-        return i2c_slave_busy;
-      case tx_ackd: {
+      case state_rx_ackd:
+        read_bits(8, state_rx_done);
+        return i2c_busy;
+      case state_tx_done:
+        read_bits(1, state_tx_ackd);  // Read the ack/nack
+        return i2c_busy;
+      case state_tx_ackd: {
         if ((USIDR & 0x01)) {
           await_start();
-          return i2c_slave_idle;
+          return i2c_idle;
         }
-        m_next_state = tx_wait;
+        m_next_state = state_tx_wait;
       }  // FALLTHROUGH
-      case tx_wait:
+      case state_tx_wait:
         if (m_tx_done) {
-          slave_transmit(0xFF, true);
-          return i2c_slave_busy;
+          transmit(0xFF, true);
+          return i2c_busy;
         } else {
           // Disable overflow IRQ until user transmits something while keeping the clock stretched
           // This allows the user to return from their ISR and do some processing with IRQs enabled
@@ -75,26 +83,25 @@ namespace xtd {
           USICR &= ~_BV(USIOIE);
           return i2c_slave_transmit;
         }
-      case rx_done:
-        // See comment for tx_wait
+      case state_rx_done:
+        // See comment for state_tx_wait
         USICR &= ~_BV(USIOIE);
         return i2c_slave_receive;
       default:
-        return i2c_slave_internal_error;
+        return i2c_internal_error;
     }
   }
 
-  uint32_t i2c_device::enable(uint32_t) {
+  void i2c_device::power_on() {
     PRR &= ~_BV(PRUSI);  // Make sure the USI device is powered
 
     scl_high();
     sda_high();
     scl_output();
     sda_input();
-    return 0;
   }
 
-  void i2c_device::disable() {
+  void i2c_device::power_off() {
     slave_off();
     PRR |= _BV(PRUSI);  // Make sure the USI device is powered down
   }
@@ -114,15 +121,23 @@ namespace xtd {
     USISR = 0xF0;  // Clear all flags and reset overflow counter
   }
 
-  void i2c_device::slave_transmit(i2c_data data, bool last_byte) {
-    m_tx_done = last_byte;
-    write_bits(data, 8, tx_done);
+  bool i2c_device::idle() const {
+    auto ovf_en = USICR & _BV(USIOIE);
+    auto in_isr = USISR & (_BV(USISIF) | _BV(USIOIF));
+
+    return !in_isr && !ovf_en;
   }
 
-  i2c_data i2c_device::slave_receive_raw() { return USIDR; }
+  void i2c_device::transmit(i2c_data data, bool last_byte) {
+    m_tx_done = last_byte;
+    write_bits(data, 8, state_tx_done);
+  }
 
-  void i2c_device::slave_ack(i2c_read_response response) {
-    write_bits(response == i2c_ack ? 0x00 : 0xFF, 1, response == i2c_ack ? rx_ackd : idle);
+  i2c_data i2c_device::receive_raw() { return USIDR; }
+
+  void i2c_device::ack(i2c_read_response response) {
+    write_bits(response == i2c_ack ? 0x00 : 0xFF, 1,
+               response == i2c_ack ? state_rx_ackd : state_idle);
   }
 
   void i2c_device::expect_bits(uint8_t bits, uint8_t next_state) {
