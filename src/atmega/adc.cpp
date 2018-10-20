@@ -36,8 +36,11 @@ namespace xtd {
   }
 
   void adc_disable() {
-    clr_bit(ADCSRA, ADEN);  // Disable ADC
-    set_bit(PRR, PRADC);    // Take ADC power in Power Reduction Register
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+      set_bit(ADCSRA, ADIF);  // Clear pending irq flag
+      clr_bit(ADCSRA, ADEN);  // Disable ADC
+      set_bit(PRR, PRADC);    // Take ADC power in Power Reduction Register
+    }
   }
 
   void adc_change_speed(adc_frequency hz) {
