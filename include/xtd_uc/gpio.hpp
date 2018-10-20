@@ -21,25 +21,10 @@ namespace xtd {
     const uint8_t m_port_and_pin;
   };
 
-  // Sets either the specific pin or the whole port directly to the given GPIO mode.
-  // When the pin is set to output mode, the value of the output pin is unchanged.
-  // Set the value of the output pin by doing a gpio_write before calling this method.
-  //
-  // This is dangerous as ATmega specs say in 14.2.3:
-  // * Switching between tristate and output high.
-  //    - Must go through either pullup or output low state.
-  // *Switching between pullup and output low.
-  //    - Must go through either tristate or output high state.
-  //
-  // Careless use of these functions may drive the ATmega out of spec. However they are
-  // faster than the (safe) counterparts.
-  void gpio_config_unsafe(gpio_pin pin, gpio_mode mode);
-  void gpio_config_unsafe(gpio_port port, gpio_mode mode);
-
   // Sets either the specific pin or whole port to the given GPIO mode in a safe way.
   // This is slightly slower and larger code than the '_unsafe' variants.
   void gpio_config(gpio_pin pin, gpio_mode mode, bool value = false);
-  void gpio_config(gpio_port port, gpio_mode mode, bool value = false);
+  void gpio_config(gpio_port port, gpio_mode mode, uint8_t value = 0xFF);
 
   // Sets the given value on the output pin. Must only be called when the pin is in output mode.
   // If this is called when the pin is input mode, it may change the pin from tristate to pullup.
