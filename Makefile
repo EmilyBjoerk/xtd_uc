@@ -6,7 +6,7 @@
 CXXFLAGS=-std=c++14 -g -Wall -Wextra -pedantic -Werror -Iinclude/
 CXXFLAGS_AVR=-Os -fno-threadsafe-statics -fno-stack-protector -fshort-enums
 CXXFLAGS_AVR_FLTO=-flto -fwhole-program -ffunction-sections -fuse-linker-plugin
-CXX_AVR=avr-g++ $(CXXFLAGS) $(CXXFLAGS_AVR) -DF_CPU=16000000UL
+CXX_AVR=avr-g++ $(CXXFLAGS) $(CXXFLAGS_AVR) -DF_CPU=1000000UL
 CXX_HOST=clang++ $(CXXFLAGS) -O0 -g3 -pipe
 CXX_AVR_ATTINY=$(CXX_AVR) -mmcu=attiny85
 CXX_AVR_ATMEGA=$(CXX_AVR) -mmcu=atmega328p
@@ -59,7 +59,9 @@ ATMEGA_ASSEMBLY=$(ATMEGA_OBJECTS:.o=.s)
 
 upload-atmega-test: $(ATMEGA_BITSTREAM)
 # For Arduino Nano 
-	avrdude -v -p m328p -b 115200 -c arduino -P /dev/ttyUSB0 -U flash:w:$(ATMEGA_BITSTREAM):i
+#	avrdude -v -p m328p -b 115200 -c arduino -P /dev/ttyUSB0 -U flash:w:$(ATMEGA_BITSTREAM):i
+# For AVRISP to test board
+	avrdude -v -p m328p -b 19200 -c avrisp -P /dev/ttyACM0 -U flash:w:$(ATMEGA_BITSTREAM):i
 
 $(ATMEGA): $(ATMEGA_OBJECTS)
 	$(CXX_AVR_ATMEGA) $(CXXFLAGS_AVR_FLTO) $(LDFLAGS_AVR) $(ATMEGA_OBJECTS) -o $@

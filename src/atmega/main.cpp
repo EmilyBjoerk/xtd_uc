@@ -4,7 +4,7 @@
 
 #include <avr/interrupt.h>
 
-constexpr auto c_led_pin = xtd::gpio_pin(xtd::port_b, 5);
+constexpr auto c_led_pin = xtd::gpio_pin(xtd::port_b, 6);
 
 using namespace xtd::unit_literals;
 
