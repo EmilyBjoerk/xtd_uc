@@ -39,6 +39,8 @@ namespace xtd {
   template <typename T, uint16_t addr>
   class eeprom_small {
   public:
+    using value_type = T;
+    
     const T operator*() const {
       T ans;
 #ifndef ENABLE_TEST
