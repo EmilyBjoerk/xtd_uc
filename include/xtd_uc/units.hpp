@@ -228,6 +228,9 @@ namespace xtd {
     using capacitance = quantity<type, farad, scale>;
 
     template <typename type, typename scale>
+    using temperature = quantity<type, kelvin, scale>;
+
+    template <typename type, typename scale>
     using current = quantity<type, ampere, scale>;
 
     template <typename type, typename scale>
