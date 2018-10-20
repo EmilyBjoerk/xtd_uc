@@ -27,7 +27,7 @@ namespace xtd {
 #ifdef TX_LED_ENABLED
   constexpr gpio_pin c_pin_tx_led(UART_TX_LED_PORT, UART_TX_LED_PIN);
 #endif
-}
+}  // namespace xtd
 
 ISR(USART_UDRE_vect) {
   if (!xtd::tx_queue.empty()) {
@@ -117,20 +117,23 @@ namespace xtd {
   }
 
   void uart_put(char data) {
-    bool full = true;
-    while (full) {
-      ATOMIC_BLOCK(ATOMIC_FORCEON) { full = tx_queue.full(); }
-      if (full) {
-        // The buffer is full, sleep the expected time required to empty a quarter of it.
-        // We don't want to busy poll as that constant disabling of interrupts would
-        // mess with the transmitter.
-        delay(uart_symbol_duration(uart_buffer_len / 4));
-      }
-    }
+    uint8_t prev_i_flag = SREG & _BV(7);
 
-    ATOMIC_BLOCK(ATOMIC_FORCEON) { tx_queue.push(data); }
+    cli();
+    bool full = tx_queue.full();
+    while (full) {
+      // The buffer is full, sleep the expected time required to empty a quarter of it.
+      // We don't want to busy poll as that constant disabling of interrupts would
+      // mess with the transmitter.
+
+      sei();
+      delay(uart_symbol_duration(uart_buffer_len / 4));
+      cli();
+    }
+    tx_queue.push(data);
+    SREG |= prev_i_flag;
 
     // Enable interrupt processing if it was disabled.
     UCSR0B |= _BV(UDRIE0);
   }
-}
+}  // namespace xtd
