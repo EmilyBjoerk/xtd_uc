@@ -54,6 +54,9 @@ namespace xtd {
     MAKE_LITERAL(m_s2, units::acceleration, int, ratio<1>)
 
     MAKE_LITERAL_PREFIXES(s, units::second, int)
+    MAKE_LITERAL(min, units::second, int, ratio<60L>)
+    MAKE_LITERAL(h, units::second, int, ratio<60L * 60L>)
+    MAKE_LITERAL(days, units::second, int, ratio<60L * 60L * 24L>)
 
     MAKE_LITERAL_PREFIXES(K, units::kelvin, int)
 

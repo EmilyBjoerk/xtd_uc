@@ -40,11 +40,13 @@ namespace xtd {
   class eeprom_small {
   public:
     using value_type = T;
-    
+
     const T operator*() const {
       T ans;
 #ifndef ENABLE_TEST
-      ATOMIC_BLOCK(ATOMIC_RESTORESTATE) { eeprom_read_block(&ans, reinterpret_cast<void*>(addr), sizeof(T)); }
+      ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        eeprom_read_block(&ans, reinterpret_cast<void*>(addr), sizeof(T));
+      }
 #else
       ans = m_value;
 #endif
@@ -53,7 +55,9 @@ namespace xtd {
 
     void operator=(const T& value) {
 #ifndef ENABLE_TEST
-      ATOMIC_BLOCK(ATOMIC_RESTORESTATE) { eeprom_update_block(&value, reinterpret_cast<void*>(addr), sizeof(T)); }
+      ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        eeprom_update_block(&value, reinterpret_cast<void*>(addr), sizeof(T));
+      }
 #else
       m_value = value;
 #endif
@@ -61,8 +65,41 @@ namespace xtd {
 
   private:
 #ifdef ENABLE_TEST
-   T m_value = 0;
+    T m_value = 0;
 #endif
+  };
+
+  template <typename T>
+  class eemem {
+  public:
+    using value_type = T;
+
+    constexpr eemem(T v) : m_value(v) {}
+
+    operator value_type() const { return read(); }
+    value_type get() const { return read(); }
+
+    void operator=(const T& value) { write(value); }
+
+  private:
+    T m_value;
+#ifdef ENABLE_TEST
+    T read() const { return m_value; }
+    void write(const T& v) { m_value = v; }
+#endif
+    T read() const {
+      T ans;
+      ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        eeprom_read_block(&ans, const_cast<void*>(reinterpret_cast<const void*>(&m_value)),
+                          sizeof(T));
+      }
+      return ans;
+    }
+    void write(const T& v) {
+      ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        eeprom_update_block(&v, reinterpret_cast<void*>(&m_value), sizeof(T));
+      }
+    }
   };
 }  // namespace xtd
 

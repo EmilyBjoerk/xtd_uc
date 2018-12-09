@@ -25,26 +25,12 @@ namespace xtd {
 
     // Non-standard extensions
     using days = duration<int16_t, ratio<24L * 3600L>>;  // +- 127 days
-  }                                                      // namespace chrono
 
-  namespace chrono_literals {
+  }  // namespace chrono
 
-#define MAKE_LITERAL(TYPE, LIT)                                        \
-  constexpr chrono::TYPE operator"" _##LIT(unsigned long long int x) { \
-    return chrono::TYPE(static_cast<chrono::TYPE::value_type>(x));          \
-  }
-
-    MAKE_LITERAL(nanoseconds, ns)
-    MAKE_LITERAL(microseconds, us)
-    MAKE_LITERAL(milliseconds, ms)
-    MAKE_LITERAL(seconds, s)
-    MAKE_LITERAL(minutes, min)
-    MAKE_LITERAL(hours, h)
-    MAKE_LITERAL(days, days)
-
-#undef MAKE_LITERAL
-  }  // namespace chrono_literals
-
+  // Namespace "chrono_literals" is not provided, use xtd::unit_literals
+  // instead.
+  
   namespace chrono {
     template <class Clock, class Duration = typename Clock::duration>
     class time_point {

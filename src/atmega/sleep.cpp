@@ -2,7 +2,7 @@
 
 #include "xtd_uc/sleep.hpp"
 
-using namespace xtd::chrono_literals;
+using namespace xtd::unit_literals;
 
 namespace xtd {
   using chrono::steady_clock;
