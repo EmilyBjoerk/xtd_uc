@@ -1,8 +1,12 @@
+#include "xtd_uc/delay.hpp"
 #include "xtd_uc/common.hpp"
 
-#include "xtd_uc/delay.hpp"
-
+#ifdef ENABLE_TEST
+#include <chrono>
+#include <thread>
+#else
 #include <util/delay.h>  // _delay_loop_2
+#endif
 
 namespace xtd {
 
@@ -14,6 +18,10 @@ namespace xtd {
   // Further more the conversion is done at the call site and if the argument is a constant
   // expression the conversion enjoys compile time constant propagation and is free of overhead.
   void delay(const delay_duration& d) {
+#ifdef ENABLE_TEST
+    std::this_thread::sleep_for(std::chrono::nanoseconds(xtd::chrono::nanoseconds(d).count()));
+
+#else
     auto counts = d.count();
     static_assert(sizeof(counts) >= 4, "counts way too small");
 
@@ -33,5 +41,6 @@ namespace xtd {
     if (counts > 0) {
       _delay_loop_2(static_cast<uint16_t>(counts));
     }
+#endif
   }
-}
+}  // namespace xtd

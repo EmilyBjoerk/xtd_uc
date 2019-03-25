@@ -86,7 +86,7 @@ namespace xtd {
 #ifdef ENABLE_TEST
     T read() const { return m_value; }
     void write(const T& v) { m_value = v; }
-#endif
+#else
     T read() const {
       T ans;
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -100,6 +100,7 @@ namespace xtd {
         eeprom_update_block(&v, reinterpret_cast<void*>(&m_value), sizeof(T));
       }
     }
+#endif
   };
 }  // namespace xtd
 

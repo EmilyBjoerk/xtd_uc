@@ -50,7 +50,6 @@ namespace xtd {
   } while (0)
 
         PRINT_SYMBOL_POS(A, > 0);
-        PRINT_SYMBOL_POS(F, > 0);
         PRINT_SYMBOL_POS(K, > 0);
         PRINT_SYMBOL_POS(s, > 0);
         PRINT_SYMBOL_POS(m, > 0);
@@ -59,7 +58,6 @@ namespace xtd {
         PRINT_SYMBOL_POS(mol, > 0);
 
         PRINT_SYMBOL_POS(A, < 0);
-        PRINT_SYMBOL_POS(F, < 0);
         PRINT_SYMBOL_POS(K, < 0);
         PRINT_SYMBOL_POS(s, < 0);
         PRINT_SYMBOL_POS(m, < 0);

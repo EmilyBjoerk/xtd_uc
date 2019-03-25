@@ -14,7 +14,7 @@ namespace xtd {
   }
 
   template <typename T>
-  constexpr auto clamp(const T& v, const T& min, const T& max) {
+  constexpr auto& clamp(const T& v, const T& min, const T& max) {
     return v < min ? min : max < v ? max : v;
   }
 }

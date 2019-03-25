@@ -99,6 +99,7 @@ namespace xtd {
         v--;
         return copy;
       }
+
       constexpr value_type count() const { return v; }
 
     private:
@@ -133,7 +134,7 @@ namespace xtd {
       constexpr auto g = gcd(da, bc);
 
       // FIXME: Compute without overflow
-      using scale = ratio<g, scales_r::den * scales_l::den>;
+      using scale = ratio_t<g, scales_r::den * scales_l::den>;
       auto ans = lhs.count() * (da / g) + rhs.count() * (bc / g);
       return quantity<decltype(ans), units, scale>(ans);
     }
@@ -175,7 +176,12 @@ namespace xtd {
 
     template <typename val_l, typename val_r, typename units_r, typename scales_r>
     constexpr auto operator/(const val_l lhs, const quantity<val_r, units_r, scales_r>& rhs) {
-      return quantity<double, unity, ratio<1>>(lhs) / rhs;
+      return quantity<val_l, unity, ratio<1>>(lhs) / rhs;
+    }
+
+    template <typename val_l, typename units_l, typename scales_l, typename val_r>
+    constexpr auto operator/(const quantity<val_l, units_l, scales_l>& lhs, const val_r rhs) {
+      return lhs/quantity<val_r, unity, ratio<1>>(rhs);
     }
 
     template <typename val_l, typename val_r, typename units, typename scales_l, typename scales_r>
@@ -187,7 +193,20 @@ namespace xtd {
     template <typename val_l, typename val_r, typename units, typename scales_l, typename scales_r>
     constexpr auto operator<(const quantity<val_l, units, scales_l>& lhs,
                              const quantity<val_r, units, scales_r>& rhs) {
-      return (lhs - rhs).count() < 0;
+      // We have:
+      // x*a/b < y*c/d <=> x*a*d < y*c*b
+      // let:
+      // g = gcd(a*d, c*b)
+      // then:
+      // x*(a*d)/g < y*(c*b)/g
+
+      // This is a compile time mult. compiler should warn of overflow
+      constexpr auto da = scales_r::den * scales_l::num;
+      constexpr auto bc = scales_l::den * scales_r::num;
+      constexpr auto g = gcd(da, bc);
+
+      // FIXME: Compute without overflow
+      return lhs.count() * (da / g) < rhs.count() * (bc / g);
     }
 
     template <typename val_l, typename val_r, typename units, typename scales_l, typename scales_r>

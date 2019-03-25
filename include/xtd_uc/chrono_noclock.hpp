@@ -5,10 +5,13 @@
 #include "cstdint.hpp"
 #include "units.hpp"
 
-#ifdef ENABLE_TEST
+#ifdef HAS_STL
 #include <iomanip>
 #include <ostream>
 #endif
+
+// Namespace "chrono_literals" is not provided due to frequent conflict
+// with xtd::unit_literals which you sould use instead.
 
 namespace xtd {
   namespace chrono {
@@ -26,12 +29,6 @@ namespace xtd {
     // Non-standard extensions
     using days = duration<int16_t, ratio<24L * 3600L>>;  // +- 127 days
 
-  }  // namespace chrono
-
-  // Namespace "chrono_literals" is not provided, use xtd::unit_literals
-  // instead.
-  
-  namespace chrono {
     template <class Clock, class Duration = typename Clock::duration>
     class time_point {
     public:
@@ -41,14 +38,13 @@ namespace xtd {
       using scale = typename Clock::scale;
 
       constexpr time_point() = default;  // Default time of clock init
-
       constexpr explicit time_point(const duration& d) : m_d(d) {}
+
       constexpr duration time_since_epoch() const { return m_d; }
 
       time_point& operator=(const time_point&) = default;
 
       bool operator==(const time_point& rhs) const { return m_d == rhs.m_d; };
-
       bool operator!=(const time_point& rhs) const { return !(*this == rhs); };
 
       template <typename D>
@@ -56,6 +52,12 @@ namespace xtd {
         m_d = that.time_since_epoch();
         return (*this);
       }
+
+#ifdef HAS_STL
+      friend std::ostream& operator<<(std::ostream& os, const time_point& t) {
+        return os << t.time_since_epoch();
+      }
+#endif
 
     private:
       duration m_d;
@@ -133,29 +135,51 @@ namespace xtd {
       return duration<int64_t, new_scale>(duration<int64_t, new_scale>(lhs).count() +
                                           duration<int64_t, new_scale>(rhs).count());
     }
+  }  // namespace chrono
 
-#ifdef ENABLE_TEST
+  namespace units {
+#ifdef HAS_STL
+    // This overload must be in the same namespace as xtd::units::quantity of which
+    // duration is an alias. Otherwise this overload will not be found through ADL.
     template <typename R, typename P>
-    std::ostream& operator<<(std::ostream& os, const duration<R, P>& d) {
+    std::ostream& operator<<(std::ostream& os, const chrono::duration<R, P>& d) {
+      using namespace chrono;
       int h = ratio_convert<hours::scale, P>(d.count());
       auto rh = d - hours(h);
-      int m = ratio_convert<minutes::scale, typename decltype(rh)::scale>(rh.count());
+      int m = ratio_convert<minutes::scale, decltype(rh)::scale>(rh.count());
       auto rm = rh - minutes(m);
-      int s = ratio_convert<seconds::scale, typename decltype(rm)::scale>(rm.count());
+      int s = ratio_convert<seconds::scale, decltype(rm)::scale>(rm.count());
       auto rs = rm - seconds(s);
-      int ms = ratio_convert<milliseconds::scale, typename decltype(rs)::scale>(rs.count());
+      int ms = ratio_convert<milliseconds::scale, decltype(rs)::scale>(rs.count());
 
       return os << std::setfill('0') << std::setw(2) << h << ":" << std::setfill('0')
                 << std::setw(2) << m << ":" << std::setfill('0') << std::setw(2) << s << "."
                 << std::setfill('0') << std::setw(3) << ms;
     }
-    template <typename C, typename D>
-    std::ostream& operator<<(std::ostream& os, const time_point<C, D>& t) {
-      return os << t.time_since_epoch();
-    }
 #endif
-
-  }  // namespace chrono
+  }  // namespace units
 }  // namespace xtd
+
+#ifdef HAS_STL
+#include <chrono>
+namespace std {
+  namespace chrono {
+    template <typename R, typename P>
+    std::ostream& operator<<(std::ostream& os, const std::chrono::duration<R, P>& d) {
+      auto h = std::chrono::duration_cast<std::chrono::hours>(d);
+      auto rh = d - h;
+      auto m = std::chrono::duration_cast<std::chrono::minutes>(rh);
+      auto rm = rh - m;
+      auto s = std::chrono::duration_cast<std::chrono::seconds>(rm);
+      auto rs = rm - seconds(s);
+      auto ms = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(rs);
+
+      return os << std::setfill('0') << std::setw(2) << h.count() << ":" << std::setfill('0')
+                << std::setw(2) << m.count() << ":" << std::setfill('0') << std::setw(2)
+                << s.count() << "." << std::setfill('0') << std::setw(3) << ms.count();
+    }
+  }  // namespace chrono
+}  // namespace std
+#endif
 
 #endif
