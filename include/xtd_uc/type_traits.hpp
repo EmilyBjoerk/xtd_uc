@@ -67,7 +67,7 @@ namespace xtd {
 
   // specialization for variadic functions such as printf
   template <class Ret, class... Args>
-  struct is_function<Ret(Args...,...)> : true_type {};
+  struct is_function<Ret(Args..., ...)> : true_type {};
 
   // specialization for function types that have cv-qualifiers
   template <class Ret, class... Args>
@@ -77,45 +77,45 @@ namespace xtd {
   template <class Ret, class... Args>
   struct is_function<Ret(Args...) const volatile> : true_type {};
   template <class Ret, class... Args>
-  struct is_function<Ret(Args...,...) const> : true_type {};
+  struct is_function<Ret(Args..., ...) const> : true_type {};
   template <class Ret, class... Args>
-  struct is_function<Ret(Args...,...) volatile> : true_type {};
+  struct is_function<Ret(Args..., ...) volatile> : true_type {};
   template <class Ret, class... Args>
-  struct is_function<Ret(Args...,...) const volatile> : true_type {};
+  struct is_function<Ret(Args..., ...) const volatile> : true_type {};
 
   // specialization for function types that have ref-qualifiers
   template <class Ret, class... Args>
   struct is_function<Ret(Args...)&> : true_type {};
   template <class Ret, class... Args>
-  struct is_function<Ret(Args...) const &> : true_type {};
+  struct is_function<Ret(Args...) const&> : true_type {};
   template <class Ret, class... Args>
   struct is_function<Ret(Args...) volatile&> : true_type {};
   template <class Ret, class... Args>
   struct is_function<Ret(Args...) const volatile&> : true_type {};
   template <class Ret, class... Args>
-  struct is_function<Ret(Args...,...)&> : true_type {};
+  struct is_function<Ret(Args..., ...)&> : true_type {};
   template <class Ret, class... Args>
-  struct is_function<Ret(Args...,...) const &> : true_type {};
+  struct is_function<Ret(Args..., ...) const&> : true_type {};
   template <class Ret, class... Args>
-  struct is_function<Ret(Args...,...) volatile&> : true_type {};
+  struct is_function<Ret(Args..., ...) volatile&> : true_type {};
   template <class Ret, class... Args>
-  struct is_function<Ret(Args...,...) const volatile&> : true_type {};
+  struct is_function<Ret(Args..., ...) const volatile&> : true_type {};
   template <class Ret, class... Args>
   struct is_function<Ret(Args...) &&> : true_type {};
   template <class Ret, class... Args>
-  struct is_function<Ret(Args...) const &&> : true_type {};
+  struct is_function<Ret(Args...) const&&> : true_type {};
   template <class Ret, class... Args>
   struct is_function<Ret(Args...) volatile&&> : true_type {};
   template <class Ret, class... Args>
   struct is_function<Ret(Args...) const volatile&&> : true_type {};
   template <class Ret, class... Args>
-  struct is_function<Ret(Args...,...) &&> : true_type {};
+  struct is_function<Ret(Args..., ...) &&> : true_type {};
   template <class Ret, class... Args>
-  struct is_function<Ret(Args...,...) const &&> : true_type {};
+  struct is_function<Ret(Args..., ...) const&&> : true_type {};
   template <class Ret, class... Args>
-  struct is_function<Ret(Args...,...) volatile&&> : true_type {};
+  struct is_function<Ret(Args..., ...) volatile&&> : true_type {};
   template <class Ret, class... Args>
-  struct is_function<Ret(Args...,...) const volatile&&> : true_type {};
+  struct is_function<Ret(Args..., ...) const volatile&&> : true_type {};
 
   // specializations for noexcept versions of all the above (C++17 and later)
   /*
@@ -363,6 +363,50 @@ struct is_function<Ret(Args......) const volatile&& noexcept> : true_type {};
 
   template <class T>
   using decay_t = typename decay<T>::type;
+
+  // ---------------------------------------------------------------------------
+  // numerical tests
+  // ---------------------------------------------------------------------------
+
+  template <class T>
+  struct is_floating_point
+      : xtd::integral_constant<
+            bool, xtd::is_same<float, typename xtd::remove_cv<T>::type>::value ||
+                      xtd::is_same<double, typename xtd::remove_cv<T>::type>::value ||
+                      xtd::is_same<long double, typename xtd::remove_cv<T>::type>::value> {};
+
+  template <class T>
+  struct is_integral
+      : xtd::integral_constant<
+            bool, xtd::is_same<bool, typename xtd::remove_cv<T>::type>::value ||
+                      xtd::is_same<char, typename xtd::remove_cv<T>::type>::value ||
+                      xtd::is_same<char16_t, typename xtd::remove_cv<T>::type>::value ||
+                      xtd::is_same<char32_t, typename xtd::remove_cv<T>::type>::value ||
+                      xtd::is_same<wchar_t, typename xtd::remove_cv<T>::type>::value ||
+                      xtd::is_same<short, typename xtd::remove_cv<T>::type>::value ||
+                      xtd::is_same<int, typename xtd::remove_cv<T>::type>::value ||
+                      xtd::is_same<long, typename xtd::remove_cv<T>::type>::value ||
+                      xtd::is_same<long long, typename xtd::remove_cv<T>::type>::value ||
+                      xtd::is_same<unsigned char, typename xtd::remove_cv<T>::type>::value ||
+                      xtd::is_same<unsigned short, typename xtd::remove_cv<T>::type>::value ||
+                      xtd::is_same<unsigned int, typename xtd::remove_cv<T>::type>::value ||
+                      xtd::is_same<unsigned long, typename xtd::remove_cv<T>::type>::value ||
+                      xtd::is_same<unsigned long long, typename xtd::remove_cv<T>::type>::value> {};
+
+  template <class T>
+  struct is_arithmetic : xtd::integral_constant<bool, xtd::is_integral<T>::value ||
+                                                          xtd::is_floating_point<T>::value> {};
+
+  namespace detail {
+    template <typename T, bool = xtd::is_arithmetic<T>::value>
+    struct is_signed : xtd::integral_constant<bool, T(-1) < T(0)> {};
+
+    template <typename T>
+    struct is_signed<T, false> : xtd::false_type {};
+  }  // namespace detail
+
+  template <typename T>
+  struct is_signed : detail::is_signed<T>::type {};
 
 }  // namespace xtd
 

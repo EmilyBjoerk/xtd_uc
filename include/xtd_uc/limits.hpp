@@ -1,6 +1,7 @@
 #ifndef XTD_UC_LIMITS_HPP
 #define XTD_UC_LIMITS_HPP
 #include "common.hpp"
+#include "type_traits.hpp"
 
 namespace xtd {
   enum float_denorm_style { denorm_indeterminate = -1, denorm_absent = 0, denorm_present = 1 };
@@ -12,19 +13,14 @@ namespace xtd {
     round_toward_neg_infinity = 3
   };
 
-  enum class round_style{
-    nearest,
-    truncate,
-    floor,
-    ceil
-  };
+  enum class round_style { nearest, truncate, floor, ceil };
 
   namespace detail {
     template <typename T>
     class numeric_limits_impl_int {
     public:
       constexpr static bool is_specialised = true;
-      constexpr static bool is_signed = T(-1) < T();
+      constexpr static bool is_signed = xtd::is_signed<T>::value;
       constexpr static bool is_integer = true;
       constexpr static bool is_exact = true;
 
@@ -52,7 +48,17 @@ namespace xtd {
 
       static constexpr T min() { return is_signed ? (~T()) ^ (~T() >> 1) : T(); }
       static constexpr T lowest() { return min(); }
-      static constexpr T max() { return is_signed ? ((~T()) >> 1) : ~T(); }
+      static constexpr T max() {
+        if (xtd::is_integral<T>::value) {
+          if (xtd::is_signed<T>::value) {
+	    return (T(-1) >> 1);
+          } else {
+	    return T(-1);
+          }
+        } else {
+	  return T(0);
+        }
+      }
       static constexpr T epsilon() { return 0; }
       static constexpr T round_error() { return 0; }
       static constexpr T infinity() { return 0; }

@@ -46,6 +46,8 @@ namespace xtd {
     return type(static_cast<type::value_type>(x));              \
   }
 
+    MAKE_LITERAL(ppm, units::unity, long, micro)
+
     MAKE_LITERAL(g, units::kilogram, int, milli)
     MAKE_LITERAL(kg, units::kilogram, int, ratio<1>)
     MAKE_LITERAL(ton, units::kilogram, int, kilo)
