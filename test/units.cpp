@@ -39,7 +39,7 @@ TEST(Quantity, Multiplication) {
 }
 
 TEST(Quantity, ScaleOverflowBug1){
-  // ASSERT_EQ(1999_pF, 2_nF - 1_pF);
+   ASSERT_EQ(1999_pF, 2_nF - 1_pF);
 }
 
 TEST(Quantity, Inversion) { ASSERT_EQ(10_Hz, 1 / 100_ms); }
@@ -67,7 +67,7 @@ TEST(Quantity, MakeUnity) {
   auto unity_volts = units::make_unity_valued<volts.count()>(volts);
 
   ASSERT_EQ(1, unity_volts.count());
-  static_assert(xtd::is_same_v<units::volt, decltype(unity_volts)::unit>,
+  static_assert(xtd::is_same_v<units::volt, decltype(unity_volts)::units>,
                 "Wrong unit for make unity");
   ASSERT_EQ(volts, unity_volts);
 }

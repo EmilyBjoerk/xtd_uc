@@ -47,12 +47,12 @@ namespace xtd {
     using sievert = gray;
     using katal = detail::unit_ratios_subtract<mole, second>;
 
-    template <typename value, typename units, typename scales>
+    template <typename Value, typename Units, typename Scale>
     class quantity {
     public:
-      using unit = units;
-      using scale = scales;
-      using value_type = value;
+      using units = Units;
+      using scale = Scale;
+      using value_type = Value;
 
       constexpr quantity() = default;
       constexpr quantity(value_type val) : v(val){};
@@ -61,7 +61,7 @@ namespace xtd {
       template <typename V, typename S>
       constexpr quantity(const quantity<V, units, S>& q)
           : v(static_cast<value_type>(
-                xtd::ratio_scale<ratio_t<scales::den * S::num, scales::num * S::den>>(q.count()))) {
+                xtd::ratio_scale<ratio_t<scale::den * S::num, scale::num * S::den>>(q.count()))) {
         // a * b / c = d * e / f   <=>    a = d * (ce/bf)
       }
 
@@ -69,7 +69,7 @@ namespace xtd {
 
 #ifdef HAS_STL
       friend std::ostream& operator<<(std::ostream& os, const quantity& q) {
-        os << xtd::ratio_scale<scales>(static_cast<double>(q.v));
+        os << xtd::ratio_scale<scale>(static_cast<double>(q.v));
         if (!is_same<unity, units>::value) {
           os << ' ' << units();
         }
@@ -79,24 +79,24 @@ namespace xtd {
       constexpr quantity operator-() const { return quantity(-count()); }
 
       constexpr quantity& operator++() {
-        v++;
+        ++v;
         return *this;
       }
 
       constexpr quantity operator++(int) {
         auto copy = *this;
-        v++;
+        ++v;
         return copy;
       }
 
       constexpr quantity& operator--() {
-        v--;
+        --v;
         return *this;
       }
 
       constexpr quantity operator--(int) {
         auto copy = *this;
-        v--;
+        --v;
         return copy;
       }
 
@@ -114,7 +114,7 @@ namespace xtd {
     // Create a new quantity type such that the given quantity is represented with count()==1.
     template <long long x, typename q>
     constexpr auto make_unity_valued(q) {
-      return make_unity_valued<typename q::value_type, typename q::unit, typename q::scale, x>();
+      return make_unity_valued<typename q::value_type, typename q::units, typename q::scale, x>();
     }
 
     template <typename val_l, typename val_r, typename units, typename scales_l, typename scales_r>
@@ -133,8 +133,9 @@ namespace xtd {
       constexpr auto bc = scales_l::den * scales_r::num;
       constexpr auto g = gcd(da, bc);
 
+      using scale = ratio_divide<ratio_t<g, scales_r::den>, ratio<scales_l::den>>;
+
       // FIXME: Compute without overflow
-      using scale = ratio_t<g, scales_r::den * scales_l::den>;
       auto ans = lhs.count() * (da / g) + rhs.count() * (bc / g);
       return quantity<decltype(ans), units, scale>(ans);
     }
@@ -181,7 +182,7 @@ namespace xtd {
 
     template <typename val_l, typename units_l, typename scales_l, typename val_r>
     constexpr auto operator/(const quantity<val_l, units_l, scales_l>& lhs, const val_r rhs) {
-      return lhs/quantity<val_r, unity, ratio<1>>(rhs);
+      return lhs / quantity<val_r, unity, ratio<1>>(rhs);
     }
 
     template <typename val_l, typename val_r, typename units, typename scales_l, typename scales_r>
