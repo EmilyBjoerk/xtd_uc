@@ -38,6 +38,10 @@ TEST(Quantity, Multiplication) {
   ASSERT_EQ(10_V, 500_mA * 20_Ohm);
 }
 
+TEST(Quantity, ScaleOverflowBug1){
+  // ASSERT_EQ(1999_pF, 2_nF - 1_pF);
+}
+
 TEST(Quantity, Inversion) { ASSERT_EQ(10_Hz, 1 / 100_ms); }
 
 TEST(Quantity, Division) { ASSERT_EQ(25_uA, 500_mV / 20_kOhm); }

@@ -51,7 +51,7 @@ namespace xtd {
   constexpr static uint8_t uart_parity_bits = UART_PARITY_BITS;
   constexpr static uint8_t uart_stop_bits = UART_STOP_BITS;
   constexpr static uint8_t uart_frame_len = 1 + uart_data_bits + uart_parity_bits + uart_stop_bits;
-  constexpr static uint16_t uart_baud_rate = UART_BAUD;
+  constexpr static uint32_t uart_baud_rate = UART_BAUD;
 
   using uart_rx_status = uint8_t;
   using uart_symbol_period = xtd::ratio<uart_frame_len, uart_baud_rate>;
@@ -75,7 +75,7 @@ namespace xtd {
   // Blocks until the TX queue is emptied.
   void uart_flush();
 
-  // Puts one character onto the TX queue. Global IRQ will be enabled after return.
+  // Puts one character onto the TX queue.
   void uart_put(char c);
 
   struct uart_stream_tag {};

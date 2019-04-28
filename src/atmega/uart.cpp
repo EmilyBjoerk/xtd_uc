@@ -13,12 +13,16 @@
 #include <avr/sleep.h>
 #include <util/atomic.h>
 
+#include <avr/cpufunc.h>
+
 #if defined(UART_TX_LED_PIN) && defined(UART_TX_LED_PORT)
 #define TX_LED_ENABLED
 #ifndef UART_TX_LED_ACTIVE
 #define UART_TX_LED_ACTIVE 0
 #endif
 #endif
+
+using namespace xtd::unit_literals;
 
 namespace xtd {
   static queue<uint8_t, uart_buffer_len> tx_queue;
@@ -117,11 +121,9 @@ namespace xtd {
   }
 
   void uart_put(char data) {
-    uint8_t prev_i_flag = SREG & _BV(7);
-
-    cli();
-    bool full = tx_queue.full();
-    while (full) {
+    
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    while (tx_queue.full()) {
       // The buffer is full, sleep the expected time required to empty a quarter of it.
       // We don't want to busy poll as that constant disabling of interrupts would
       // mess with the transmitter.
@@ -131,9 +133,9 @@ namespace xtd {
       cli();
     }
     tx_queue.push(data);
-    SREG |= prev_i_flag;
-
+    
     // Enable interrupt processing if it was disabled.
     UCSR0B |= _BV(UDRIE0);
+    }
   }
 }  // namespace xtd

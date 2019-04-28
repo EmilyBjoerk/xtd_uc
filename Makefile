@@ -16,7 +16,7 @@ HEADERS=$(wildcard include/xtd_uc/*.hpp)
 
 # Host unit tests
 GOOGLE_TEST_LIB=gtest
-GOOGLE_TEST_INCLUDE=/usr/local/include
+GOOGLE_TEST_INCLUDE=/usr/include
 HOST_TEST=unit_tests
 HOST_TEST_CXX=$(CXX_HOST) -I$(GOOGLE_TEST_INCLUDE) -DF_CPU=1000000 -DENABLE_TEST -ftrapv -fsanitize=undefined -fprofile-instr-generate -fcoverage-mapping
 HOST_TEST_LDFLAGS=$(LDFLAGS) -lm -l$(GOOGLE_TEST_LIB)
