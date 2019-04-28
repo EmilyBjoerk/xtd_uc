@@ -74,13 +74,11 @@ namespace xtd {
           ratio_subtract<ratio_divide<mcuratio, x2ratio>, ratio<1>>::value_round;
 
       // Enable power to the UART
-      auto rx_en_mask = rx_cb != nullptr ? _BV(RXEN0) : 0;
+      auto rx_en_mask = rx_cb != nullptr ? _BV(RXEN0) | _BV(RXCIE0) : 0;
       clr_bit(PRR, PRUSART0);
       UBRR0 = ubrr;
-      // UBRR0H = static_cast<uint8_t>(ubrr >> 8);
-      // UBRR0L = static_cast<uint8_t>(ubrr);
       UCSR0A = UART_X2 ? _BV(U2X0) : uint8_t();
-      UCSR0B = _BV(RXCIE0) | rx_en_mask | _BV(TXEN0);
+      UCSR0B = rx_en_mask | _BV(TXEN0);
 
       constexpr auto paritybit_mask =
           uart_parity_bits == 0 ? 0b00 : (uart_parity_bits == 1 ? 0b10 : 0b11);
@@ -105,37 +103,27 @@ namespace xtd {
   bool uart_can_tx() { return !(PRR & _BV(PRUSART0)) && UCSR0B & _BV(RXEN0); }
 
   void uart_flush() {
-    // This has to be atomic as tx_queue can be modified from ISR
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-      set_sleep_mode(SLEEP_MODE_IDLE);
-      sleep_enable();
-      while (!tx_queue.empty()) {
-        // Data left to send, enable global interrupts. The first instruction after SEI is
-        // guaranteed to be ran so we will enter sleep before an ISR triggers.
-        sei();
-        sleep_cpu();  // UDRE IRQ will wake us from this sleep when a byte has been sent on the
-        cli();        // Disable IRQ again and check the tx_queue again.
-      }
-      sleep_disable();
+    NON_ATOMIC_BLOCK(NONATOMIC_RESTORESTATE) {
+      while (xtd::test_bit(UCSR0A, TXC0))
+        ;
     }
   }
 
   void uart_put(char data) {
-    
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-    while (tx_queue.full()) {
-      // The buffer is full, sleep the expected time required to empty a quarter of it.
-      // We don't want to busy poll as that constant disabling of interrupts would
-      // mess with the transmitter.
+      while (tx_queue.full()) {
+        // The buffer is full, sleep the expected time required to empty a quarter of it.
+        // We don't want to busy poll as that constant disabling of interrupts would
+        // mess with the transmitter.
 
-      sei();
-      delay(uart_symbol_duration(uart_buffer_len / 4));
-      cli();
-    }
-    tx_queue.push(data);
-    
-    // Enable interrupt processing if it was disabled.
-    UCSR0B |= _BV(UDRIE0);
+        sei();
+        delay(uart_symbol_duration(uart_buffer_len / 4));
+        cli();
+      }
+      tx_queue.push(data);
+
+      // Enable interrupt processing if it was disabled.
+      xtd::set_bit(UCSR0B, UDRIE0);
     }
   }
 }  // namespace xtd
