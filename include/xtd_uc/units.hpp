@@ -135,7 +135,6 @@ namespace xtd {
 
       using scale = ratio_divide<ratio_t<g, scales_r::den>, ratio<scales_l::den>>;
 
-      // FIXME: Compute without overflow
       auto ans = lhs.count() * (da / g) + rhs.count() * (bc / g);
       return quantity<decltype(ans), units, scale>(ans);
     }
