@@ -86,8 +86,7 @@ namespace xtd {
   // computes x*r where r is a ratio<> object.
   template <typename R, typename T,
             round_style rounding = round_style::truncate>  // todo; enable only for r is ratio
-  constexpr auto
-  ratio_scale(T value) {
+  constexpr auto ratio_scale(T value) {
     if (numeric_limits<T>::is_integer) {
       // todo: use a computation that doesn't overflow
       if (rounding == round_style::nearest) {

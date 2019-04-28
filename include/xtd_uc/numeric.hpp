@@ -36,6 +36,6 @@ namespace xtd {
     } while (n != 0);
     return m << shift;
   }
-}
+}  // namespace xtd
 
 #endif

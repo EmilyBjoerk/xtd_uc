@@ -22,8 +22,8 @@ namespace xtd {
   };
 
   enum usb_endpoint_size : uint8_t {
-    one_by_8  = 0b00000010,
-    two_by_8  = 0b00000110,
+    one_by_8 = 0b00000010,
+    two_by_8 = 0b00000110,
     one_by_16 = 0b00010010,
     two_by_16 = 0b00010110,
     one_by_32 = 0b00100010,
@@ -34,9 +34,7 @@ namespace xtd {
 
   class usb_endpoint {
   public:
-    void reset() {
-        UERST 
-    }
+    void reset() { UERST }
     void select() { UENUM = endpoint_num; }
 
     bool activate(usb_endpoint_type type, usb_endpoint_size size) {

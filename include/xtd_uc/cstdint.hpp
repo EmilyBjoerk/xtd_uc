@@ -22,6 +22,6 @@ namespace xtd {
   using size_t = unsigned int;
 
 #endif  //__AVR
-}
+}  // namespace xtd
 
 #endif

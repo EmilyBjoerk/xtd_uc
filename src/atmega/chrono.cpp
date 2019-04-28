@@ -21,9 +21,9 @@ namespace xtd {
         //
         xtd::clr_bit(PRR, PRTIM2);  // Enable power to timer 2
         TCNT2 = 0;
-        TCCR2A = 0;                 // Normal mode, counter wraps at 0xFF
-        TCCR2B = 0b111 << CS20;     // Prescale clock frequency by 1/1024
-        TIMSK2 = _BV(TOIE2);        // Overflow interrupt enable for timer 2
+        TCCR2A = 0;              // Normal mode, counter wraps at 0xFF
+        TCCR2B = 0b111 << CS20;  // Prescale clock frequency by 1/1024
+        TIMSK2 = _BV(TOIE2);     // Overflow interrupt enable for timer 2
       }
     }
 

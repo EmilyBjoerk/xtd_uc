@@ -5,8 +5,8 @@
 using namespace xtd::unit_literals;
 
 namespace xtd {
-  using chrono::steady_clock;
   using chrono::duration;
+  using chrono::steady_clock;
 
   // This could have been a template function with a custom duration. However by
   // making it a free function we avoid multiple instantiations with the same
@@ -45,4 +45,4 @@ namespace xtd {
     // Busy wait the remainder
     delay(end - steady_clock::now());
   }
-}
+}  // namespace xtd

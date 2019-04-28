@@ -10,14 +10,11 @@ namespace xtd {
 
     size_type size() const { return (EndAddr - StartAddr) / sizeof(Element); }
 
-    void put(){
+    void put() {
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE) { eeprom_update_block(&m_value, m_address, sizeof(T)); }
-
     }
 
-
   private:
-    
   };
 
 }  // namespace xtd

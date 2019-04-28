@@ -12,19 +12,19 @@ namespace xtd {
       rst_cause = static_cast<reset_cause>(MCUSR);
 
       // If MCUSR has WDRF set, it must be cleared before changing WDE flag.
-      if ( enable_wdt) {
+      if (enable_wdt) {
         wdt_enable(wdt_timeout::_16ms, false, true);
         MCUSR = 0;
       } else {
-	MCUSR = 0;
-	wdt_disable();
+        MCUSR = 0;
+        wdt_disable();
       }
 
       adc_disable();
 
       // Enable all power reduction
       PRR = 0xff;
-      ACSR = _BV(ACD); // Disable analog comparator
+      ACSR = _BV(ACD);  // Disable analog comparator
 
       wdt_reset_timeout();
     }

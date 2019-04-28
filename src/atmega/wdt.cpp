@@ -3,6 +3,5 @@
 #include "xtd_uc/wdt.hpp"
 
 namespace xtd {
-  namespace avr {
-  }
-}
+  namespace avr {}
+}  // namespace xtd

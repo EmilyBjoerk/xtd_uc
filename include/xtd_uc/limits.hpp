@@ -51,12 +51,12 @@ namespace xtd {
       static constexpr T max() {
         if (xtd::is_integral<T>::value) {
           if (xtd::is_signed<T>::value) {
-	    return (T(-1) >> 1);
+            return (T(-1) >> 1);
           } else {
-	    return T(-1);
+            return T(-1);
           }
         } else {
-	  return T(0);
+          return T(0);
         }
       }
       static constexpr T epsilon() { return 0; }

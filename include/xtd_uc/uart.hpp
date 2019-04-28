@@ -85,6 +85,6 @@ namespace xtd {
   public:
     void put(char c) { uart_put(c); }
   };
-}
+}  // namespace xtd
 
 #endif

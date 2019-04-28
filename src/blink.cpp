@@ -21,5 +21,4 @@ namespace xtd {
       }
     }
   }
-}
-
+}  // namespace xtd

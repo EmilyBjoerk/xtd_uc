@@ -44,7 +44,7 @@ namespace xtd {
       using endpoint_type =
           usb_descriptor_endpoint<decltype(get<size>(tuple())), typename next::num_endpoints>;
       using num_endpoints = increment<typename next::num_endpoints>;
-      
+
       next n;
       endpoint_type endpoint;
     };
@@ -68,7 +68,7 @@ namespace xtd {
           endpoint_list<I::endpoints_tuple::size(), typename I::endpoints_tuple, ep_count>;
 
       using total_endpoints = typename endpoints_type::num_endpoints;
-      
+
       const uint8_t interface_number = if_count::index;
       const uint8_t alternate_setting = 0;
       const uint8_t num_endpoints = I::endpoints_tuple::size();

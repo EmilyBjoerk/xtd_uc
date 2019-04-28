@@ -18,11 +18,9 @@ namespace xtd {
     explicit pstr(const char* s) : str(s) {}
     const char* str;
 
-    #ifdef ENABLE_TEST
-    friend std::ostream& operator << (std::ostream& os, const pstr& s){
-      return os << s.str;
-    }
-    #endif
+#ifdef ENABLE_TEST
+    friend std::ostream& operator<<(std::ostream& os, const pstr& s) { return os << s.str; }
+#endif
   };
 
 }  // namespace xtd

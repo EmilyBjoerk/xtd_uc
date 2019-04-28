@@ -1,8 +1,8 @@
 #include "xtd_uc/common.hpp"
 
+#include <avr/io.h>
 #include "xtd_uc/gpio.hpp"
 #include "xtd_uc/utility.hpp"
-#include <avr/io.h>
 
 namespace xtd {
   constexpr auto& get_port(gpio_port port) {
@@ -47,7 +47,7 @@ namespace xtd {
         clr_bit(io_ddr, pin_nr);
         break;
       case gpio_mode::output:
-	force_bit(io_port, pin_nr, value);
+        force_bit(io_port, pin_nr, value);
         set_bit(io_ddr, pin_nr);
     }
   }
@@ -67,7 +67,7 @@ namespace xtd {
         break;
       case gpio_mode::output:
         io_ddr = value;
-	io_ddr = 0xFF;
+        io_ddr = 0xFF;
     }
   }
 
@@ -86,4 +86,4 @@ namespace xtd {
   bool gpio_is_output(gpio_pin pin) { return get_ddr(pin.port()) & _BV(pin.pin()); }
 
   bool gpio_is_any_output(gpio_port port) { return get_ddr(port); }
-}
+}  // namespace xtd

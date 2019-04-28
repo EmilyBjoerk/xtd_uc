@@ -66,6 +66,6 @@ namespace xtd {
     }
     return os;
   }
-}
+}  // namespace xtd
 
 #endif

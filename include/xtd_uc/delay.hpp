@@ -22,8 +22,8 @@ namespace xtd {
   //
   // The accuracy of the delay is determined by the accuracy of the system clock and the overhead to
   // setup the delay counters.
-  // The precison of the delay is 4/F_CPU seconds. For a 16MHz clock, this is 250 ns. 
+  // The precison of the delay is 4/F_CPU seconds. For a 16MHz clock, this is 250 ns.
   void delay(const delay_duration& d);
-}
+}  // namespace xtd
 
 #endif

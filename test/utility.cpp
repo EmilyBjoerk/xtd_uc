@@ -6,7 +6,7 @@
 TEST(Swap, Compute) {
   int a = 3;
   int b = 1;
-  xtd::swap(a,b);
+  xtd::swap(a, b);
   ASSERT_EQ(1, a);
   ASSERT_EQ(3, b);
 }

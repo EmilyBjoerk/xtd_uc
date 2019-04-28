@@ -14,7 +14,7 @@ namespace xtd {
   // Sleeps the MCU for the desired time.
   //
   // CAUTION: Global Interrputs must be enabled before calling sleep!
-  // 
+  //
   // Largest sleep possible is dictated by xtd::chrono::steady_clock::duration.
   //
   // The precision of the sleep is dictated by the precision of xtd::chrono::steady_clock,
@@ -41,6 +41,6 @@ namespace xtd {
   // timer for example to avoid the sleep causing the watchdog to reset the MCU.
   void sleep(const xtd::chrono::steady_clock::duration& d, bool deep = false,
              irq_wake_callback irq_wake = nullptr);
-}
+}  // namespace xtd
 
 #endif

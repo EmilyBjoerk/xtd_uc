@@ -53,7 +53,7 @@ namespace xtd {
     set_bit(TWCR, TWINT);  // Clear interrupt flag
     set_bit(TWCR, TWIE);   // In case we were stretching the clock outside of the ISR
   }
-  
+
   i2c_state stretch_scl(i2c_state s) {
     stretch_scl();
     return s;

@@ -11,17 +11,17 @@ namespace xtd {
   constexpr i2c_address i2c_general_call_addr = 0x00;
 
   enum i2c_read_response : char {
-			       #ifdef __AVR_MEGA__
+#ifdef __AVR_MEGA__
     // The hardware needs to know in advance if it should ack
     // or nack the next byte. Otherwise it would have to
     // stall and await a firmware response after each byte,
     // lowering the transmission speed notably
     i2c_ack_after_next,
     i2c_nack_after_next,
-    #elif defined __AVR_ATtiny85__
+#elif defined __AVR_ATtiny85__
     i2c_ack,
     i2c_nack,
-    #endif
+#endif
   };
   enum i2c_txn_mode : char { write, read };
   enum i2c_state : char {

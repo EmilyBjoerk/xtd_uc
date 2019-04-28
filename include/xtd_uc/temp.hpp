@@ -15,14 +15,11 @@ using device =
 
 constexpr device descriptor_root PROGMEM;
 
+int main() {
+  usb_configure(descriptor_root);
 
-
-int main(){
-
-    usb_configure(descriptor_root);
-
-    usb_enable();
-    usb_attach();
+  usb_enable();
+  usb_attach();
 }
 
 //------------------------------------------------------------------------------

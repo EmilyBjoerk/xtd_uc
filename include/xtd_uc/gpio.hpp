@@ -47,6 +47,6 @@ namespace xtd {
 
   // Returns true if any pin on the port is set as output.
   bool gpio_is_any_output(gpio_port port);
-}
+}  // namespace xtd
 
 #endif

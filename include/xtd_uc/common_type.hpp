@@ -48,5 +48,5 @@ namespace xtd {
 
   template <class T1, class T2, class... R>
   struct common_type<T1, T2, R...> : common_type_multi_impl<void, T1, T2, R...> {};
-}
+}  // namespace xtd
 #endif

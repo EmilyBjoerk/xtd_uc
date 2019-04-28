@@ -23,6 +23,6 @@ namespace xtd {
    * time from first call.
    */
   reset_cause bootstrap(bool enable_wdt_reset);
-}
+}  // namespace xtd
 
 #endif
