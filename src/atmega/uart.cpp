@@ -103,7 +103,7 @@ namespace xtd {
   bool uart_can_tx() { return !(PRR & _BV(PRUSART0)) && UCSR0B & _BV(RXEN0); }
 
   void uart_flush() {
-    NON_ATOMIC_BLOCK(NONATOMIC_RESTORESTATE) {
+    NONATOMIC_BLOCK(NONATOMIC_RESTORESTATE) {
       while (xtd::test_bit(UCSR0A, TXC0))
         ;
     }

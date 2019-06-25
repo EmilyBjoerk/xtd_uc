@@ -14,11 +14,14 @@ namespace xtd {
     b = c;
   }
 
-  inline bool test_bit(volatile uint8_t& sfr, int bit) { return (sfr & (1 << bit)) != 0; }
+  // Not returning bool here, allows the compiler to generate effective sbis instructions 
+  inline auto test_bit(volatile uint8_t& sfr, int bit) { return (sfr & (1 << bit)); }
 
   inline void set_bit(volatile uint8_t& sfr, int bit) { sfr |= (1 << bit); }
 
   inline void clr_bit(volatile uint8_t& sfr, int bit) { sfr &= ~(1 << bit); }
+
+  inline void toggle_bit(volatile uint8_t& sfr, int bit) { sfr ^= (1 << bit); }
 
   inline void force_bit(volatile uint8_t& sfr, int bit, bool v) {
     if (v)

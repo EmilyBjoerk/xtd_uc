@@ -8,7 +8,13 @@
 #include "xtd_uc/adc.hpp"
 #include "xtd_uc/delay.hpp"
 
-EMPTY_INTERRUPT(ADC_vect)
+static volatile xtd::adc_callback_t g_conversion_complete_cb = nullptr;
+
+ISR(ADC_vect) {
+  if (g_conversion_complete_cb) {
+    g_conversion_complete_cb();
+  }
+}
 
 #include "../adc_common.tpp"
 
@@ -51,6 +57,21 @@ namespace xtd {
     // Guarantee that we're one ADC Cycle after the last start conversion
     ADMUX = (ADMUX & ~adc_vref_mask) | (vref << REFS0);
     adc_select_ch(ch);
+  }
+
+  void adc_continuous_start(adc_continuous_mode mode, adc_callback_t cb) {
+    g_conversion_complete_cb = cb;
+    ADCSRB &= ~0b111;
+    ADCSRB |= mode;
+    set_bit(ADCSRA, ADATE);
+    if (mode == adc_free_running) {
+      set_bit(ADCSRA, ADSC);
+    }
+  }
+
+  void adc_continuous_stop() {
+    clr_bit(ADCSRA, ADEN);  // Disable ADC
+    g_conversion_complete_cb = nullptr;
   }
 
   void adc_dio_pin(uint8_t channel, bool enabled) { xtd::force_bit(DIDR0, channel, enabled); }

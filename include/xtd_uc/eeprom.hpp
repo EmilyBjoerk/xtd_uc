@@ -1,85 +1,34 @@
 #ifndef XTD_UC_EEPROM_HPP
 #define XTD_UC_EEPROM_HPP
 #include "common.hpp"
+#include "utility.hpp"
 
 #ifndef ENABLE_TEST
 #include <avr/eeprom.h>
 #include <util/atomic.h>
 #endif
 
+// Make rtags happy
+#ifndef EEMEM
+#define EEMEM
+#endif
+
 namespace xtd {
-  template <typename T>
-  class eeprom {
-  public:
-    eeprom(T* eeprom_address) : m_address(eeprom_address) {
-#ifndef ENABLE_TEST
-      ATOMIC_BLOCK(ATOMIC_RESTORESTATE) { eeprom_read_block(&m_value, m_address, sizeof(T)); }
-#else
-      m_value = *eeprom_address;
-#endif
-    }
-
-    const T* operator->() const { return &m_value; }
-    const T& operator*() const { return m_value; }
-
-    void operator=(const T& value) {
-      m_value = value;
-#ifndef ENABLE_TEST
-      ATOMIC_BLOCK(ATOMIC_RESTORESTATE) { eeprom_update_block(&m_value, m_address, sizeof(T)); }
-#else
-      *m_address = m_value;
-#endif
-    }
-
-  private:
-    T m_value;
-    T* m_address;
-  };
-
-  template <typename T, uint16_t addr>
-  class eeprom_small {
-  public:
-    using value_type = T;
-
-    const T operator*() const {
-      T ans;
-#ifndef ENABLE_TEST
-      ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        eeprom_read_block(&ans, reinterpret_cast<void*>(addr), sizeof(T));
-      }
-#else
-      ans = m_value;
-#endif
-      return ans;
-    }
-
-    void operator=(const T& value) {
-#ifndef ENABLE_TEST
-      ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        eeprom_update_block(&value, reinterpret_cast<void*>(addr), sizeof(T));
-      }
-#else
-      m_value = value;
-#endif
-    }
-
-  private:
-#ifdef ENABLE_TEST
-    T m_value = 0;
-#endif
-  };
-
   template <typename T>
   class eemem {
   public:
     using value_type = T;
 
-    constexpr eemem(T v) : m_value(v) {}
+    template <typename... U>
+    constexpr eemem(U&&... v) : m_value(xtd::forward<U>(v)...) {}
 
     operator value_type() const { return read(); }
     value_type get() const { return read(); }
 
-    void operator=(const T& value) { write(value); }
+    auto operator*() { return get(); }
+
+    template<typename U>
+    void operator=(U&& value) { write(value); }
 
   private:
     T m_value;
