@@ -35,7 +35,9 @@ namespace xtd {
   using ratio_multiply = ratio_t<R1::num * R2::num, R1::den * R2::den>;
 
   template <typename R1, typename R2>
-  using ratio_divide = ratio_t<R1::num * R2::den, R1::den * R2::num>;
+  using ratio_divide =
+      ratio_t<(R1::num / gcd(R1::num, R2::num)) * (R2::den / gcd(R2::den, R1::den)),
+              (R1::den / gcd(R2::den, R1::den)) * (R2::num / gcd(R1::num, R2::num))>;
 
   template <typename R1>
   using ratio_invert = ratio_t<R1::den, R1::num>;
