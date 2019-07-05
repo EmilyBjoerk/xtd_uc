@@ -123,19 +123,48 @@ namespace xtd {
       // We have:
       // x * a/b + y * c/d = (xda + ybc)/(bd)
       // let:
+      // g_da = gcd(d, a)
+      // g_bc = gcd(b, c)
       // g = gcd(da, bc)
       // then:
       // x * a/b + y * c/d = (xda/g + ybc/g) * g/(bd);
       // I.e. the resulting period is g/bd.
 
-      // This is a compile time mult. compiler should warn of overflow
-      constexpr auto da = scales_r::den * scales_l::num;
-      constexpr auto bc = scales_l::den * scales_r::num;
-      constexpr auto g = gcd(da, bc);
+      constexpr auto a = scales_l::num;
+      constexpr auto b = scales_l::den;
+      constexpr auto c = scales_r::num;
+      constexpr auto d = scales_r::den;
 
-      using scale = ratio_divide<ratio_t<g, scales_r::den>, ratio<scales_l::den>>;
+      constexpr auto g_ad = gcd(a, d);
+      constexpr auto g_bc = gcd(b, c);
 
-      auto ans = lhs.count() * (da / g) + rhs.count() * (bc / g);
+      constexpr auto a_p = a / g_ad;
+      constexpr auto b_p = b / g_bc;
+      constexpr auto c_p = c / g_bc;
+      constexpr auto d_p = d / g_ad;
+
+      // Note: a_p and d_p are now co-prime, same for b_p and c_p. This means that
+      // g_p = gcd(a_p*d_p, b_p*c_p) = gcd(a_p,b_p*c_p)*gcd(d_p,b_p*c_p)
+      //     = gcd(a_p, b_p) * gcd(a_p, c_p) * gcd(d_p, b_p) * gcd(d_p, c_p)
+      //     = / note that a,b are co-prime and thus a_p and b_p must also be, same for c,d /
+      //     = gcd(a_p, c_p) * gcd(d_p, b_p)
+
+      constexpr auto scale_left_p = (a_p / gcd(a_p, c_p)) * (d_p / gcd(d_p, b_p)) * g_ad * g_ad;
+      constexpr auto scale_right_p = (b_p / gcd(d_p, b_p)) * (c_p / gcd(a_p, c_p)) * g_bc * g_bc;
+
+      constexpr auto g_s = gcd(scale_left_p, scale_right_p);
+
+      constexpr auto scale_left = scale_left_p / g_s;
+      constexpr auto scale_right = scale_right_p / g_s;
+
+      // Scale = g_s * gcd(a_p, c_p) * gcd(d_p, b_p) / (b*d)
+      //       = g_s * gcd(a_p, c_p) * gcd(d_p, b_p) / (b_p*d_p*g_ad*g_bc)
+
+      using scale = ratio_multiply<ratio_multiply<ratio_t<gcd(d_p, b_p), max(b_p, d_p)>,
+                                                  ratio_t<gcd(a_p, c_p), min(b_p, d_p)>>,
+                                   ratio_t<g_s, g_ad * g_bc>>;
+
+      auto ans = lhs.count() * scale_left + rhs.count() * scale_right;
       return quantity<decltype(ans), units, scale>(ans);
     }
 
@@ -176,7 +205,8 @@ namespace xtd {
 
     template <typename val_l, typename val_r, typename units_r, typename scales_r>
     constexpr auto operator/(const val_l lhs, const quantity<val_r, units_r, scales_r>& rhs) {
-      return quantity<val_l, unity, ratio<1>>(lhs) / rhs;
+      using units = detail::unit_ratios_subtract<unity, units_r>;
+      return quantity<val_l, units, ratio<1, scales_r::num>>(lhs * scales_r::den / rhs.count());
     }
 
     template <typename val_l, typename units_l, typename scales_l, typename val_r>

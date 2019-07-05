@@ -13,6 +13,10 @@ namespace xtd {
   }
 
 #define MAKE_LITERAL_PREFIXES(LIT, UNIT, TYPE)                  \
+  constexpr auto operator"" _f##LIT(unsigned long long int x) { \
+    using type = units::quantity<TYPE, UNIT, femto>;             \
+    return type(static_cast<type::value_type>(x));              \
+  }                                                             \
   constexpr auto operator"" _p##LIT(unsigned long long int x) { \
     using type = units::quantity<TYPE, UNIT, pico>;             \
     return type(static_cast<type::value_type>(x));              \
@@ -47,6 +51,7 @@ namespace xtd {
   }
 
     MAKE_LITERAL(ppm, units::unity, long, micro)
+    MAKE_LITERAL(ppt, units::unity, long, milli)
 
     MAKE_LITERAL(g, units::kilogram, int, milli)
     MAKE_LITERAL(kg, units::kilogram, int, ratio<1>)

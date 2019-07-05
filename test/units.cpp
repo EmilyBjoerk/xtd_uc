@@ -46,6 +46,13 @@ TEST(Quantity, Division) { ASSERT_EQ(25_uA, 500_mV / 20_kOhm); }
 
 TEST(Quantity, Additions) { ASSERT_EQ(1001_g, 1_kg + 1_g); }
 
+TEST(Quantity, Additions_ScaleOverflow) {
+  using capacitance =
+      units::capacitance<uint32_t, ratio_t<999999999999999999, 1000000000000000000>>;
+
+  ASSERT_EQ(capacitance(2), capacitance(1) + capacitance(1));
+}
+
 TEST(Quantity, Subtraction) { ASSERT_EQ(999_g, 1_kg - 1_g); }
 
 TEST(Quantity, FreqConversion) {
