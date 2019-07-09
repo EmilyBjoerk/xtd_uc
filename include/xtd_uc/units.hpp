@@ -270,28 +270,28 @@ namespace xtd {
     using km = quantity<int, metre, kilo>;
     using force = quantity<int, newton, ratio<1>>;
 
-    template <typename type, typename scale>
+    template <typename type, typename scale = ratio<1>>
     using mass = quantity<type, kilogram, scale>;
 
-    template <typename type, typename scale>
+    template <typename type, typename scale = ratio<1>>
     using capacitance = quantity<type, farad, scale>;
 
-    template <typename type, typename scale>
+    template <typename type, typename scale = ratio<1>>
     using temperature = quantity<type, kelvin, scale>;
 
-    template <typename type, typename scale>
+    template <typename type, typename scale = ratio<1>>
     using current = quantity<type, ampere, scale>;
 
-    template <typename type, typename scale>
+    template <typename type, typename scale = ratio<1>>
     using voltage = quantity<type, volt, scale>;
 
-    template <typename type, typename scale>
+    template <typename type, typename scale = ratio<1>>
     using time = quantity<type, second, scale>;
 
-    template <typename type, typename scale>
+    template <typename type, typename scale = ratio<1>>
     using frequency = quantity<type, hertz, scale>;
 
-    template <typename type, typename scalee>
+    template <typename type, typename scalee = ratio<1>>
     using scale = quantity<type, unity, scalee>;
 
   }  // namespace units

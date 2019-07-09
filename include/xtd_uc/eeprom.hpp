@@ -27,8 +27,22 @@ namespace xtd {
 
     auto operator*() { return get(); }
 
-    template<typename U>
-    void operator=(U&& value) { write(value); }
+    template <typename U>
+    void operator=(U&& value) {
+      write(value);
+    }
+
+    void clamp_increment() {
+      if (get() < xtd::numeric_limits<T>::max()) {
+        (*this) = get() + 1;
+      }
+    }
+
+    void clamp_decrement() {
+      if (get() > xtd::numeric_limits<T>::min()) {
+        (*this) = get() - 1;
+      }
+    }
 
   private:
     T m_value;
