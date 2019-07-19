@@ -104,7 +104,8 @@ namespace xtd {
 
   void uart_flush() {
     NONATOMIC_BLOCK(NONATOMIC_RESTORESTATE) {
-      while (xtd::test_bit(UCSR0A, TXC0))
+      // While transmitting, the UDRIE flag is set
+      while (xtd::test_bit(UCSR0B, UDRIE0))
         ;
     }
   }
