@@ -19,8 +19,7 @@ namespace xtd {
   public:
     using value_type = T;
 
-    template <typename... U>
-    constexpr eemem(U&&... v) : m_value(xtd::forward<U>(v)...) {}
+    constexpr eemem(const T& v) : m_value{v} {}
 
     operator value_type() const { return read(); }
     value_type get() const { return read(); }
