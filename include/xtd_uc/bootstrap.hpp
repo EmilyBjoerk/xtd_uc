@@ -2,27 +2,24 @@
 #define XTD_UC_BOOTSTRAP_HPP
 #include "common.hpp"
 
+#include "wdt.hpp"
 #include <stdint.h>
 
 namespace xtd {
   enum class reset_cause : uint8_t { watchdog = 8, brownout = 4, external = 2, power_on = 1 };
 
-  /*
-   * Performs initial bootstrap of the AVR MCU. Should be executed as soon as possible.
-   * It makes sure that the MCU will not be suddenly reset by Watchdog Timer and sets the
-   * state of the Watchdog Timer to the desired reset value. It does so in a manner that
-   * doesn't go through a state of WDT disabled if it was previously enabled.
+  /** 
+   * Brings the AVR to a more sensible default start up state by powering down 
+   * optional chip features to save power when they are not used. Will read and
+   * return the reset cause and setup WDT to the desired state (without going 
+   * through a disabled state if enabled was requested).
    *
-   * If the WDT reset is enabled, you must configure the WDT timeout by calling
-   * watchdog::set_timeout() immediately after calling bootstrap.
+   * Call as soon as possible after reset. 
    *
-   * Bootstrap will enable power reduction by disabling all optional chip features.
-   * You will need to individually enable the features you need. This has the implication that
-   * if you use xtd::chrono::steady_clock() it will start counting time from the first call to
-   * `now()` when it enables the power to the timer circuit. So it's not time from poweron, but
-   * time from first call.
+   * Note that by calling bootstrap(), chrono::steady_clock::now() counts time 
+   * from first call to now() and not power on.
    */
-  reset_cause bootstrap(bool enable_wdt_reset);
+  reset_cause bootstrap(bool enable_wdt_reset, wdt_timeout timeout = wdt_timeout::_16ms);
 }  // namespace xtd
 
 #endif

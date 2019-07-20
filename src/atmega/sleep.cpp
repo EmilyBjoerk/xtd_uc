@@ -1,6 +1,7 @@
 #include "xtd_uc/common.hpp"
 
 #include "xtd_uc/sleep.hpp"
+#include "xtd_uc/wdt.hpp"
 
 using namespace xtd::unit_literals;
 
@@ -31,6 +32,7 @@ namespace xtd {
     sleep_enable();
     set_sleep_mode(deep ? SLEEP_MODE_PWR_SAVE : SLEEP_MODE_IDLE);
     while (steady_clock::now() < end_safe) {
+      xtd::wdt_reset_timeout();
       if (irq_wake && !irq_wake()) {
         sleep_disable();
         return;
