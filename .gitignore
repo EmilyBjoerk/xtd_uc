@@ -10,6 +10,7 @@
 # Generated files
 Makefile
 build/
+.clangd/
 compile_commands.json
 
 # Precompiled Headers
