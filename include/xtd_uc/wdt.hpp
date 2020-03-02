@@ -32,9 +32,9 @@ namespace xtd {
   inline void wdt_enable(wdt_timeout timeout, bool irq, bool reset) {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
       wdt_reset_timeout();
-      uint8_t new_value =
-          (irq ? _BV(WDIE) : 0) | (reset ? _BV(WDE) : 0) | static_cast<uint8_t>(timeout);
-      WDTCSR |= _BV(WDCE) | _BV(WDE);
+      uint8_t new_value = _BV(WDCE) | (irq ? _BV(WDIE) : 0) | (reset ? _BV(WDE) : 0) |
+	                  static_cast<uint8_t>(timeout);
+      WDTCSR = new_value;
       WDTCSR = new_value;
     }
   }
