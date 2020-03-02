@@ -3,7 +3,7 @@
 #include "xtd_uc/uart.hpp"
 
 #include "xtd_uc/delay.hpp"
-#include "xtd_uc/gpio.hpp"
+#include "xtd_uc/gpio2.hpp"
 #include "xtd_uc/queue.hpp"
 #include "xtd_uc/utility.hpp"
 
@@ -29,7 +29,7 @@ namespace xtd {
   static uart_rx_callback rx_callback;
 
 #ifdef TX_LED_ENABLED
-  constexpr gpio_pin c_pin_tx_led(UART_TX_LED_PORT, UART_TX_LED_PIN);
+  using c_pin_tx_led = pin<UART_TX_LED_PORT, UART_TX_LED_PIN>;
 #endif
 }  // namespace xtd
 

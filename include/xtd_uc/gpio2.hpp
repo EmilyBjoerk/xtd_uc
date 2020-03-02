@@ -1,10 +1,11 @@
 #ifndef XTD_UC_GPIO2_HPP
 #define XTD_UC_GPIO2_HPP
 #include "common.hpp"
-#include "gpio.hpp"
 #include "cstdint.hpp"
 
 namespace xtd {
+  enum gpio_port { port_b, port_c, port_d };
+
   namespace detail {
     template <gpio_port P>
     struct get_port;
@@ -79,9 +80,7 @@ namespace xtd {
   public:
     port() = delete;
 
-    __attribute__((always_inline)) static auto test() {
-      return detail::get_port<P>::get();
-    }
+    __attribute__((always_inline)) static auto test() { return detail::get_port<P>::get(); }
 
     __attribute__((always_inline)) static void set(uint8_t pins) {
       detail::get_port<P>::get() |= pins;
