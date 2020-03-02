@@ -2,6 +2,7 @@
 #define XTD_UC_UNITS_HPP
 #include "cstdint.hpp"
 #include "unit_impl.hpp"
+#include "xtd_uc/ratio.hpp"
 
 namespace xtd {
   namespace units {
@@ -265,34 +266,58 @@ namespace xtd {
 
     using namespace si_prefixes;
 
-    // Default quantities
-    using kg = quantity<int, kilogram, ratio<1>>;
-    using km = quantity<int, metre, kilo>;
-    using force = quantity<int, newton, ratio<1>>;
-
+    // Types for the seven base units
     template <typename type, typename scale = ratio<1>>
-    using mass = quantity<type, kilogram, scale>;
-
-    template <typename type, typename scale = ratio<1>>
-    using capacitance = quantity<type, farad, scale>;
+    using current = quantity<type, ampere, scale>;
 
     template <typename type, typename scale = ratio<1>>
     using temperature = quantity<type, kelvin, scale>;
 
     template <typename type, typename scale = ratio<1>>
-    using current = quantity<type, ampere, scale>;
+    using time = quantity<type, second, scale>;
+
+    template <typename type, typename scale = ratio<1>>
+    using length = quantity<type, metre, scale>;
+
+    template <typename type, typename scale = ratio<1>>
+    using mass = quantity<type, kilogram, scale>;
+
+    template <typename type, typename scale = ratio<1>>
+    using luminosity = quantity<type, candela, scale>;
+
+    template <typename type, typename scale = ratio<1>>
+    using molar_mass = quantity<type, candela, scale>;
+
+    template <typename type, typename scalee = ratio<1>>
+    using scale = quantity<type, unity, scalee>;
+
+    // Types for derived units (TBD)
+    template <typename type, typename scale = ratio<1>>
+    using frequency = quantity<type, hertz, scale>;
+
+    template <typename type, typename scale = ratio<1>>
+    using force = quantity<type, newton, scale>;
 
     template <typename type, typename scale = ratio<1>>
     using voltage = quantity<type, volt, scale>;
 
     template <typename type, typename scale = ratio<1>>
-    using time = quantity<type, second, scale>;
+    using capacitance = quantity<type, farad, scale>;
 
-    template <typename type, typename scale = ratio<1>>
-    using frequency = quantity<type, hertz, scale>;
+    // Default quantities
+    using ms = time<long, milli>;
+    using s = time<long, ratio<1>>;
 
-    template <typename type, typename scalee = ratio<1>>
-    using scale = quantity<type, unity, scalee>;
+    using mV = voltage<long, milli>;
+    using V = voltage<long, ratio<1>>;
+    using kV = voltage<long, kilo>;
+
+    using pF = capacitance<long, pico>;
+    using nF = capacitance<long, nano>;
+    using uF = capacitance<long, micro>;
+
+    using kg = mass<long, ratio<1>>;
+    using km = quantity<long, metre, kilo>;
 
   }  // namespace units
 }  // namespace xtd

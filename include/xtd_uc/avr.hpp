@@ -2,13 +2,16 @@
 #define XTD_UC_AVR_HPP
 #include "common.hpp"
 
-#ifndef ENABLE_TEST
+#ifdef ENABLE_TEST
+#include <ostream>
+#else
 #include <avr/pgmspace.h>
 #include <stdio.h>
-#else
-#include <ostream>
-#define PSTR(x) x /*no-op*/
+#endif
 
+// Make clang tooling shut up
+#ifndef PSTR
+#define PSTR(x) x
 #endif
 
 namespace xtd {

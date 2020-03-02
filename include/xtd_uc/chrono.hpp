@@ -52,7 +52,7 @@ namespace xtd {
     //     short and few, and also keep code blocks with interrupts disabled to a minimum length.
     class steady_clock {
     public:
-      using value_type = signed long long;
+      using value_type = long long;
       using scale = ratio_t<1024UL, F_CPU>;  // For 16MHz -> 1 : 15625
       using duration = xtd::chrono::duration<value_type, scale>;
       using time_point = xtd::chrono::time_point<steady_clock, duration>;
