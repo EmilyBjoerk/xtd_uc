@@ -1,12 +1,14 @@
-#include "xtd_uc/common.hpp"
+#include "xtd_uc/adc.hpp"
 
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <avr/sleep.h>
 #include <stdint.h>
 #include <util/atomic.h>
-#include "xtd_uc/adc.hpp"
+
+#include "xtd_uc/common.hpp"
 #include "xtd_uc/delay.hpp"
+#include "xtd_uc/utility.hpp"
 
 static volatile xtd::adc_callback_t g_conversion_complete_cb = nullptr;
 
@@ -40,6 +42,8 @@ namespace xtd {
              _BV(ADIF) |                           // Clear IRQ flag
              adc_prescaler_bits(F_CPU, adc_hz.count());
   }
+
+  bool adc_is_enabled() { return !test_bit(PRR, PRADC) && test_bit(ADCSRA, ADEN); }
 
   void adc_disable() {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -86,6 +90,8 @@ namespace xtd {
       // Unsafe to select channel
     }
   }
+
+  uint8_t adc_get_current_ch() { return (ADMUX & adc_mux_mask) >> MUX0; }
 
   uint16_t adc_read_single_low_noise() {
     int l, h;

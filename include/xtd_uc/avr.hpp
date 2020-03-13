@@ -5,7 +5,9 @@
 #ifdef ENABLE_TEST
 #include <ostream>
 #else
+#ifdef AVR
 #include <avr/pgmspace.h>
+#endif
 #include <stdio.h>
 #endif
 

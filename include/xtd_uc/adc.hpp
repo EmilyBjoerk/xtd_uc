@@ -35,6 +35,7 @@ namespace xtd {
   using adc_frequency = units::frequency<uint32_t, ratio<1>>;
 
   void adc_enable(adc_frequency adc_hz, bool msb_align_result, adc_vref vref, uint8_t ch);
+  bool adc_is_enabled();
   void adc_disable();
   void adc_change_speed(adc_frequency hz);
   void adc_change_vref(adc_vref vref, uint8_t ch);
@@ -44,6 +45,7 @@ namespace xtd {
   void adc_dio_pin(uint8_t channel, bool enabled);
 
   void adc_select_ch(uint8_t channel);
+  uint8_t adc_get_current_ch();
   uint16_t adc_read_single_low_noise();
 
   void adc_await_conversion_complete();

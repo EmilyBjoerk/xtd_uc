@@ -1,7 +1,6 @@
 #ifndef XTD_UC_TYPE_TRAITS_HPP
 #define XTD_UC_TYPE_TRAITS_HPP
 #include "common.hpp"
-
 #include "cstdint.hpp"
 
 namespace xtd {
@@ -9,16 +8,16 @@ namespace xtd {
   // ---------------------------------------------------------------------------
   // enable_if
   // ---------------------------------------------------------------------------
-  template <bool B, class T = void>
+  template <bool B, typename Enable = void>
   struct enable_if {};
 
-  template <class T>
+  template <typename T>
   struct enable_if<true, T> {
     typedef T type;
   };
 
-  template <bool B, class T = void>
-  using enable_if_t = typename enable_if<B, T>::type;
+  template <bool B, typename Enable = void>
+  using enable_if_t = typename enable_if<B, Enable>::type;
 
   // ---------------------------------------------------------------------------
   // conditional
@@ -387,12 +386,17 @@ struct is_function<Ret(Args......) const volatile&& noexcept> : true_type {};
                       xtd::is_same<int, typename xtd::remove_cv<T>::type>::value ||
                       xtd::is_same<long, typename xtd::remove_cv<T>::type>::value ||
                       xtd::is_same<long long, typename xtd::remove_cv<T>::type>::value ||
+                      // Note that char is not implicitly signed
+                      xtd::is_same<signed char, typename xtd::remove_cv<T>::type>::value ||
                       xtd::is_same<unsigned char, typename xtd::remove_cv<T>::type>::value ||
                       xtd::is_same<unsigned short, typename xtd::remove_cv<T>::type>::value ||
                       xtd::is_same<unsigned int, typename xtd::remove_cv<T>::type>::value ||
                       xtd::is_same<unsigned long, typename xtd::remove_cv<T>::type>::value ||
                       xtd::is_same<unsigned long long, typename xtd::remove_cv<T>::type>::value> {};
 
+  template <typename T>
+  /*inline*/ constexpr bool is_integral_v = is_integral<T>::value;
+  
   template <class T>
   struct is_arithmetic : xtd::integral_constant<bool, xtd::is_integral<T>::value ||
                                                           xtd::is_floating_point<T>::value> {};

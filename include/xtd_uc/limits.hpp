@@ -19,7 +19,7 @@ namespace xtd {
     template <typename T>
     class numeric_limits_impl_int {
     public:
-      constexpr static bool is_specialised = true;
+      constexpr static bool is_specialized = true;
       constexpr static bool is_signed = xtd::is_signed<T>::value;
       constexpr static bool is_integer = true;
       constexpr static bool is_exact = true;
@@ -38,22 +38,23 @@ namespace xtd {
           static_cast<int>(numeric_limits_impl_int<T>::digits * 0.30102999566);
       constexpr static int max_digits10 = 0;
       constexpr static int radix = 2;
+      constexpr static T sign_mask = is_signed ? T(1) << digits : 0;
 
       constexpr static int min_exponent = 0;
       constexpr static int min_exponent10 = 0;
       constexpr static int max_exponent = 0;
       constexpr static int max_exponent10 = 0;
-      constexpr static bool traps = false;
+      // constexpr static bool traps = false;
       constexpr static bool tinyness_before = false;
 
-      static constexpr T min() { return is_signed ? (~T()) ^ (~T() >> 1) : T(); }
+      static constexpr T min() { return is_signed ? sign_mask : T(); }
       static constexpr T lowest() { return min(); }
       static constexpr T max() {
         if (xtd::is_integral<T>::value) {
           if (xtd::is_signed<T>::value) {
-            return (T(-1) >> 1);
+            return (~T()) & ~sign_mask;
           } else {
-            return T(-1);
+            return ~T();
           }
         } else {
           return T(0);
@@ -68,7 +69,7 @@ namespace xtd {
     };
   }  // namespace detail
 
-  template <typename T>
+  template <typename T, typename Enable = void>
   class numeric_limits {
   public:
     constexpr static bool is_specialized = false;
@@ -93,7 +94,7 @@ namespace xtd {
     constexpr static int min_exponent10 = 0;
     constexpr static int max_exponent = 0;
     constexpr static int max_exponent10 = 0;
-    constexpr static bool traps = false;
+    // constexpr static bool traps = false;
     constexpr static bool tinyness_before = false;
 
     static constexpr T min() { return T(); }
@@ -107,30 +108,17 @@ namespace xtd {
     static constexpr T denorm_min() { return T(); }
   };
 
-  template <>
-  class numeric_limits<char> : public detail::numeric_limits_impl_int<char> {};
-  template <>
-  class numeric_limits<signed char> : public detail::numeric_limits_impl_int<signed char> {};
-  template <>
-  class numeric_limits<unsigned char> : public detail::numeric_limits_impl_int<unsigned char> {};
+  template <typename T>
+  class numeric_limits<T, typename xtd::enable_if<xtd::is_integral<T>::value>::type>
+      : public detail::numeric_limits_impl_int<T> {};
 
   template <>
-  class numeric_limits<short> : public detail::numeric_limits_impl_int<short> {};
-  template <>
-  class numeric_limits<unsigned short> : public detail::numeric_limits_impl_int<unsigned short> {};
-  template <>
-  class numeric_limits<int> : public detail::numeric_limits_impl_int<int> {};
-  template <>
-  class numeric_limits<unsigned int> : public detail::numeric_limits_impl_int<unsigned int> {};
-  template <>
-  class numeric_limits<long> : public detail::numeric_limits_impl_int<long> {};
-  template <>
-  class numeric_limits<unsigned long> : public detail::numeric_limits_impl_int<unsigned long> {};
-  template <>
-  class numeric_limits<long long> : public detail::numeric_limits_impl_int<long long> {};
-  template <>
-  class numeric_limits<unsigned long long>
-      : public detail::numeric_limits_impl_int<unsigned long long> {};
+  class numeric_limits<bool, void> : public detail::numeric_limits_impl_int<bool> {
+  public:
+    constexpr static bool is_modulo = false;
+    constexpr static int digits = 1;
+    constexpr static int digits10 = 0;
+  };
 
   /*
 TBD
