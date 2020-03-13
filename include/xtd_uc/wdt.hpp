@@ -2,9 +2,12 @@
 #define XTD_UC_WDT_HPP
 #include "common.hpp"
 
+#ifndef ENABLE_TEST
 #include <avr/wdt.h>
-#include <stdint.h>
 #include <util/atomic.h>
+#endif
+
+#include <stdint.h>
 
 #include "utility.hpp"
 
@@ -22,24 +25,31 @@ namespace xtd {
     _8000ms = 0b100001
   };
 
-  inline void wdt_reset_timeout() { wdt_reset(); }
+#ifdef ENABLE_TEST
+  inline void wdt_disable() {}
+  inline void wdt_disable_irq() {}
+  inline void wdt_enable(wdt_timeout /*timeout*/, bool /*irq*/, bool /*reset*/) {}
+  inline void wdt_enable_irq() {}
+  inline bool wdt_reset_enabled() { return true; }
+  inline void wdt_reset_timeout() {}
 
-  inline void wdt_enable_irq() { set_bit(WDTCSR, WDIE); }
+#else
+  inline void wdt_disable() { wdt_enable(wdt_timeout::_16ms, false, false); }
   inline void wdt_disable_irq() { clr_bit(WDTCSR, WDIE); }
-
-  inline bool wdt_reset_enabled() { return WDTCSR & _BV(WDE); }
-
   inline void wdt_enable(wdt_timeout timeout, bool irq, bool reset) {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
       wdt_reset_timeout();
       uint8_t new_value = _BV(WDCE) | (irq ? _BV(WDIE) : 0) | (reset ? _BV(WDE) : 0) |
-	                  static_cast<uint8_t>(timeout);
+                          static_cast<uint8_t>(timeout);
       WDTCSR = new_value;
       WDTCSR = new_value;
     }
   }
+  inline void wdt_enable_irq() { set_bit(WDTCSR, WDIE); }
+  inline bool wdt_reset_enabled() { return WDTCSR & _BV(WDE); }
+  inline void wdt_reset_timeout() { wdt_reset(); }
+#endif
 
-  inline void wdt_disable() { wdt_enable(wdt_timeout::_16ms, false, false); }
 }  // namespace xtd
 
 #endif
